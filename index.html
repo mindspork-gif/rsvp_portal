@@ -29,6 +29,8 @@
     .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; color: #5a5a55; font-size: 15px; font-weight: 500; cursor: pointer; border-radius: 6px; transition: all 0.15s; }
     .tab-btn.active { background: #ffffff; color: #1a1a18; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
     .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.5); color: #1a1a18; }
+    .tab-disabled { opacity: 0.45; cursor: not-allowed !important; }
+    .tab-disabled:hover { background: transparent !important; color: #5a5a55 !important; }
 
     .card { width: 100%; max-width: 520px; background: #ffffff; border: 1.5px solid #c8c6be; border-radius: 12px; padding: 32px; }
     .panel { display: none; }
@@ -86,6 +88,10 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     footer { margin-top: 40px; font-size: 13px; color: #8a8880; letter-spacing: 0.04em; }
+    .coming-soon { text-align: center; padding: 40px 20px; }
+    .coming-soon-icon { font-size: 36px; margin-bottom: 16px; opacity: 0.4; }
+    .coming-soon-title { font-size: 18px; font-weight: 600; color: #1a1a18; margin-bottom: 10px; }
+    .coming-soon-body { font-size: 15px; color: #5a5a55; line-height: 1.6; max-width: 340px; margin: 0 auto; }
   </style>
 </head>
 <body>
@@ -98,7 +104,7 @@
 
   <div class="tabs">
     <button class="tab-btn active" id="tab-rsvp" onclick="switchTab('rsvp')">Submit RSVP</button>
-    <button class="tab-btn" id="tab-lookup" onclick="switchTab('lookup')">Check Status</button>
+    <button class="tab-btn tab-disabled" id="tab-lookup" title="Coming soon">Check Status</button>
   </div>
 
   <div class="card">
@@ -166,33 +172,10 @@
     </div>
 
     <div id="panel-lookup" class="panel">
-      <div class="section-label">RSVP Status Lookup</div>
-
-      <div class="field">
-        <label class="field-label">Fetname or Facename<span class="req">*</span><span class="note">either one</span></label>
-        <div class="either-group">
-          <div class="either-row">
-            <span class="either-label">Fetname</span>
-            <input class="either-input" type="text" id="l-fname" placeholder="Your fetname" autocomplete="off" />
-          </div>
-          <div class="either-divider"></div>
-          <div class="either-row">
-            <span class="either-label">Facename</span>
-            <input class="either-input" type="text" id="l-bname" placeholder="Your facename" autocomplete="off" />
-          </div>
-        </div>
-      </div>
-
-      <div class="field">
-        <label class="field-label">PIN<span class="req">*</span><span class="note">4-digit code assigned to you</span></label>
-        <input type="password" id="l-pin" placeholder="••••" maxlength="4" autocomplete="off" />
-      </div>
-
-      <button class="btn" id="lookup-btn" onclick="doLookup()">Check Status</button>
-      <div class="result" id="lookup-result">
-        <div class="result-title" id="lookup-result-title"></div>
-        <div class="result-body" id="lookup-result-body"></div>
-        <div class="volunteer-list" id="lookup-volunteer" style="display:none"></div>
+      <div class="coming-soon">
+        <div class="coming-soon-icon">&#9881;</div>
+        <div class="coming-soon-title">Coming Soon</div>
+        <p class="coming-soon-body">Check RSVP and PIN functions are currently in development and will be released later.</p>
       </div>
     </div>
 
