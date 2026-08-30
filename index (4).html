@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RSVP Portal</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f5f4f1;
+      color: #1a1a18;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 17px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 16px 80px;
+    }
+
+    header { width: 100%; max-width: 520px; margin-bottom: 28px; border-bottom: 1.5px solid #c8c6be; padding-bottom: 18px; }
+    .logo-line { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #5a5a55; margin-bottom: 6px; font-weight: 500; }
+    h1 { font-size: 26px; font-weight: 600; color: #1a1a18; letter-spacing: -0.01em; }
+    h1 span { color: #2563eb; }
+    .subtitle { font-size: 15px; color: #5a5a55; margin-top: 4px; }
+
+    .tabs { display: flex; width: 100%; max-width: 520px; margin-bottom: 20px; gap: 3px; background: #e8e6df; border-radius: 8px; padding: 4px; }
+    .tab-btn { flex: 1; padding: 10px; background: transparent; border: none; color: #5a5a55; font-size: 15px; font-weight: 500; cursor: pointer; border-radius: 6px; transition: all 0.15s; }
+    .tab-btn.active { background: #ffffff; color: #1a1a18; box-shadow: 0 1px 3px rgba(0,0,0,0.12); }
+    .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.5); color: #1a1a18; }
+
+    .card { width: 100%; max-width: 520px; background: #ffffff; border: 1.5px solid #c8c6be; border-radius: 12px; padding: 32px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    .section-label { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #5a5a55; font-weight: 500; margin-bottom: 20px; }
+    .field { margin-bottom: 20px; }
+    .field-label { display: block; font-size: 15px; font-weight: 600; color: #1a1a18; margin-bottom: 6px; }
+    .field-label .req { color: #2563eb; margin-left: 2px; }
+    .field-label .note { font-size: 13px; color: #5a5a55; font-weight: 400; margin-left: 6px; }
+
+    .either-group { border: 1.5px solid #b0aea6; border-radius: 8px; overflow: hidden; margin-bottom: 4px; }
+    .either-row { display: flex; align-items: center; }
+    .either-label { font-size: 13px; font-weight: 600; color: #5a5a55; background: #f0ede8; padding: 11px 12px; border-right: 1.5px solid #b0aea6; white-space: nowrap; min-width: 90px; text-align: center; letter-spacing: 0.04em; text-transform: uppercase; }
+    .either-divider { border: none; border-top: 1.5px solid #b0aea6; margin: 0; }
+    .either-input { width: 100%; background: #f5f4f1; border: none; color: #1a1a18; font-size: 17px; padding: 11px 13px; outline: none; font-family: inherit; transition: background 0.15s; }
+    .either-input:focus { background: #fff; box-shadow: inset 0 0 0 2px #2563eb; }
+    .either-hint { font-size: 13px; color: #5a5a55; margin-top: 5px; }
+
+    input[type="text"], input[type="password"], textarea { width: 100%; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #1a1a18; font-size: 17px; padding: 11px 13px; border-radius: 8px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit; -webkit-appearance: none; }
+    input[type="password"] { letter-spacing: 0.2em; }
+    input[type="text"]:focus, input[type="password"]:focus, textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); background: #fff; }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .toggle-group { display: flex; gap: 4px; }
+    .toggle-opt { flex: 1; padding: 11px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #3a3a36; font-size: 16px; font-weight: 500; text-align: center; cursor: pointer; border-radius: 8px; transition: all 0.15s; user-select: none; }
+    .toggle-opt.selected { background: #2563eb; color: #ffffff; border-color: #2563eb; }
+    .toggle-opt:hover:not(.selected) { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+
+    .check-group { display: flex; flex-direction: column; gap: 10px; }
+    .check-item { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 16px; color: #1a1a18; }
+    .check-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2563eb; cursor: pointer; flex-shrink: 0; }
+
+    .divider { border: none; border-top: 1.5px solid #e0ded8; margin: 24px 0; }
+
+    .btn { width: 100%; padding: 14px; background: #2563eb; border: none; color: #ffffff; font-size: 17px; font-weight: 600; cursor: pointer; border-radius: 8px; transition: background 0.15s; margin-top: 8px; }
+    .btn:hover:not(:disabled) { background: #1d4ed8; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .result { margin-top: 20px; padding: 16px 18px; border-left: 4px solid #c8c6be; border-radius: 0 8px 8px 0; font-size: 16px; line-height: 1.6; display: none; }
+    .result.show { display: block; }
+    .result.ok    { border-color: #16a34a; background: #f0fdf4; }
+    .result.warn  { border-color: #d97706; background: #fffbeb; }
+    .result.error { border-color: #dc2626; background: #fef2f2; }
+    .result-title { font-size: 12px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 6px; }
+    .result.ok    .result-title { color: #15803d; }
+    .result.warn  .result-title { color: #b45309; }
+    .result.error .result-title { color: #b91c1c; }
+    .result-body { color: #1a1a18; font-size: 16px; }
+
+    .volunteer-list { margin-top: 12px; padding-top: 12px; border-top: 1px solid #e0ded8; font-size: 15px; color: #2563eb; font-weight: 500; }
+    .volunteer-list span { display: block; margin-top: 4px; }
+
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer { margin-top: 40px; font-size: 13px; color: #8a8880; letter-spacing: 0.04em; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-line">Member Portal</div>
+    <h1>RSVP <span>System</span></h1>
+    <p class="subtitle">Event registration and status lookup</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-rsvp" onclick="switchTab('rsvp')">Submit RSVP</button>
+    <button class="tab-btn" id="tab-lookup" onclick="switchTab('lookup')">Check Status</button>
+  </div>
+
+  <div class="card">
+
+    <div id="panel-rsvp" class="panel active">
+      <div class="section-label">Event Registration</div>
+
+      <div class="field">
+        <label class="field-label">Fetname or Facename<span class="req">*</span><span class="note">provide at least one</span></label>
+        <div class="either-group">
+          <div class="either-row">
+            <span class="either-label">Fetname</span>
+            <input class="either-input" type="text" id="r-fname" placeholder="Your fetname" autocomplete="off" />
+          </div>
+          <div class="either-divider"></div>
+          <div class="either-row">
+            <span class="either-label">Facename</span>
+            <input class="either-input" type="text" id="r-bname" placeholder="Your facename" autocomplete="off" />
+          </div>
+        </div>
+        <p class="either-hint">Fill in whichever handle(s) you use — at least one is required.</p>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Moniker<span class="req">*</span></label>
+        <input type="text" id="r-ipname" placeholder="Your moniker" autocomplete="off" />
+      </div>
+
+      <hr class="divider">
+
+      <div class="field">
+        <label class="field-label">Have you attended before?<span class="req">*</span></label>
+        <div class="toggle-group">
+          <div class="toggle-opt" id="tog-yes" onclick="selectToggle('yes')">Yes</div>
+          <div class="toggle-opt" id="tog-no" onclick="selectToggle('no')">No</div>
+        </div>
+        <input type="hidden" id="r-prior" value="" />
+      </div>
+
+      <hr class="divider">
+
+      <div class="field">
+        <label class="field-label">Volunteer opportunities<span class="note">select all that apply</span></label>
+        <div class="check-group">
+          <label class="check-item"><input type="checkbox" value="Week Before" /> Week Before</label>
+          <label class="check-item"><input type="checkbox" value="Day Before" /> Day Before</label>
+          <label class="check-item"><input type="checkbox" value="Day of Before" /> Day of — Before</label>
+          <label class="check-item"><input type="checkbox" value="Day of During" /> Day of — During</label>
+          <label class="check-item"><input type="checkbox" value="Day of After" /> Day of — After</label>
+        </div>
+      </div>
+
+      <hr class="divider">
+
+      <div class="field">
+        <label class="field-label">Allergies / dietary restrictions<span class="note">optional</span></label>
+        <textarea id="r-allergies" placeholder="List any allergies or dietary restrictions"></textarea>
+      </div>
+
+      <button class="btn" id="rsvp-btn" onclick="doRsvp()">Submit RSVP</button>
+      <div class="result" id="rsvp-result">
+        <div class="result-title" id="rsvp-result-title"></div>
+        <div class="result-body" id="rsvp-result-body"></div>
+      </div>
+    </div>
+
+    <div id="panel-lookup" class="panel">
+      <div class="section-label">RSVP Status Lookup</div>
+
+      <div class="field">
+        <label class="field-label">Fetname or Facename<span class="req">*</span><span class="note">either one</span></label>
+        <div class="either-group">
+          <div class="either-row">
+            <span class="either-label">Fetname</span>
+            <input class="either-input" type="text" id="l-fname" placeholder="Your fetname" autocomplete="off" />
+          </div>
+          <div class="either-divider"></div>
+          <div class="either-row">
+            <span class="either-label">Facename</span>
+            <input class="either-input" type="text" id="l-bname" placeholder="Your facename" autocomplete="off" />
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">PIN<span class="req">*</span><span class="note">4-digit code assigned to you</span></label>
+        <input type="password" id="l-pin" placeholder="••••" maxlength="4" autocomplete="off" />
+      </div>
+
+      <button class="btn" id="lookup-btn" onclick="doLookup()">Check Status</button>
+      <div class="result" id="lookup-result">
+        <div class="result-title" id="lookup-result-title"></div>
+        <div class="result-body" id="lookup-result-body"></div>
+        <div class="volunteer-list" id="lookup-volunteer" style="display:none"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>No data is modified via this portal</footer>
+
+  <script>
+    // Replace with your Apps Script web app URL
+    var API_URL = 'https://script.google.com/macros/s/AKfycbzR86hw389rrdPFnlOR1l41Vmv9jtRby9yNugMJCpc710tbpX_6Wmzw1YTGUABYLN1nLA/exec';
+
+    var priorAttendee = '';
+
+    function switchTab(tab) {
+      document.getElementById('tab-rsvp').classList.toggle('active', tab === 'rsvp');
+      document.getElementById('tab-lookup').classList.toggle('active', tab === 'lookup');
+      document.getElementById('panel-rsvp').classList.toggle('active', tab === 'rsvp');
+      document.getElementById('panel-lookup').classList.toggle('active', tab === 'lookup');
+    }
+
+    function selectToggle(val) {
+      priorAttendee = val;
+      document.getElementById('r-prior').value = val;
+      document.getElementById('tog-yes').classList.toggle('selected', val === 'yes');
+      document.getElementById('tog-no').classList.toggle('selected', val === 'no');
+    }
+
+    function getVolunteerSelections() {
+      return Array.from(document.querySelectorAll('.check-group input:checked')).map(function(c) { return c.value; });
+    }
+
+    function showResult(panelId, titleId, bodyId, type, title, body) {
+      var el = document.getElementById(panelId);
+      el.className = 'result show ' + type;
+      document.getElementById(titleId).textContent = title;
+      document.getElementById(bodyId).textContent = body;
+    }
+
+    function setLoading(btnId, loading) {
+      var btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      if (loading) {
+        btn.dataset.label = btn.dataset.label || btn.textContent;
+        btn.innerHTML = '<span class="spinner"></span>Processing...';
+      } else {
+        btn.textContent = btn.dataset.label || btn.textContent;
+      }
+    }
+
+    function buildUrl(params) {
+      var url = API_URL + '?';
+      var parts = [];
+      Object.keys(params).forEach(function(k) {
+        var v = params[k];
+        if (Array.isArray(v)) {
+          parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(v.join('|')));
+        } else {
+          parts.push(encodeURIComponent(k) + '=' + encodeURIComponent(v || ''));
+        }
+      });
+      return url + parts.join('&');
+    }
+
+    function doLookup() {
+      var fname = document.getElementById('l-fname').value.trim();
+      var bname = document.getElementById('l-bname').value.trim();
+      var pin   = document.getElementById('l-pin').value.trim();
+
+      if ((!fname && !bname) || !pin) {
+        showResult('lookup-result', 'lookup-result-title', 'lookup-result-body',
+          'error', 'Input required', 'Please enter your fetname or facename, and your PIN.');
+        return;
+      }
+
+      setLoading('lookup-btn', true);
+      document.getElementById('lookup-volunteer').style.display = 'none';
+
+      var url = buildUrl({ action: 'lookup', fname: fname, bname: bname, pin: pin });
+
+      fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          setLoading('lookup-btn', false);
+          if (!data.success) {
+            showResult('lookup-result', 'lookup-result-title', 'lookup-result-body',
+              'error', 'Not found', data.message);
+            return;
+          }
+          if (data.status === 'confirmed') {
+            showResult('lookup-result', 'lookup-result-title', 'lookup-result-body',
+              'ok', 'Confirmed', data.message);
+            if (data.volunteer) {
+              var vEl = document.getElementById('lookup-volunteer');
+              vEl.style.display = 'block';
+              var shifts = data.volunteer.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+              vEl.innerHTML = '<div>Volunteer shifts selected:</div>' +
+                shifts.map(function(s) { return '<span>&#8594; ' + s + '</span>'; }).join('');
+            }
+          } else if (data.status === 'pending') {
+            showResult('lookup-result', 'lookup-result-title', 'lookup-result-body',
+              'warn', 'Pending', data.message);
+          } else if (data.status === 'not_rsvpd') {
+            showResult('lookup-result', 'lookup-result-title', 'lookup-result-body',
+              'warn', 'Not RSVPd', data.message);
+          } else {
+            showResult('lookup-result', 'lookup-result-title', 'lookup-result-body',
+              'error', 'Notice', data.message);
+          }
+        })
+        .catch(function(err) {
+          setLoading('lookup-btn', false);
+          showResult('lookup-result', 'lookup-result-title', 'lookup-result-body',
+            'error', 'Error', 'Could not reach the server. Please try again.');
+        });
+    }
+
+    function doRsvp() {
+      var fname     = document.getElementById('r-fname').value.trim();
+      var bname     = document.getElementById('r-bname').value.trim();
+      var ipname    = document.getElementById('r-ipname').value.trim();
+      var prior     = document.getElementById('r-prior').value;
+      var allergies = document.getElementById('r-allergies').value.trim();
+      var volunteer = getVolunteerSelections();
+
+      if (!fname && !bname) {
+        showResult('rsvp-result', 'rsvp-result-title', 'rsvp-result-body',
+          'error', 'Input required', 'Please provide your fetname or facename.');
+        return;
+      }
+      if (!ipname) {
+        showResult('rsvp-result', 'rsvp-result-title', 'rsvp-result-body',
+          'error', 'Input required', 'Your moniker is required.');
+        return;
+      }
+      if (!prior) {
+        showResult('rsvp-result', 'rsvp-result-title', 'rsvp-result-body',
+          'error', 'Input required', 'Please indicate whether you have attended before.');
+        return;
+      }
+
+      setLoading('rsvp-btn', true);
+
+      var url = buildUrl({
+        action: 'rsvp',
+        fname: fname,
+        bname: bname,
+        ipname: ipname,
+        prior_attendee: prior,
+        volunteer: volunteer,
+        allergies: allergies
+      });
+
+      fetch(url)
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          setLoading('rsvp-btn', false);
+          if (data.success) {
+            showResult('rsvp-result', 'rsvp-result-title', 'rsvp-result-body',
+              prior === 'no' ? 'warn' : 'ok',
+              prior === 'no' ? 'Pending' : 'Confirmed',
+              data.message);
+            document.getElementById('rsvp-btn').disabled = true;
+          } else {
+            showResult('rsvp-result', 'rsvp-result-title', 'rsvp-result-body',
+              'error', 'Error', data.message);
+          }
+        })
+        .catch(function(err) {
+          setLoading('rsvp-btn', false);
+          showResult('rsvp-result', 'rsvp-result-title', 'rsvp-result-body',
+            'error', 'Error', 'Could not reach the server. Please try again.');
+        });
+    }
+
+    document.getElementById('l-pin').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') doLookup();
+    });
+  </script>
+</body>
+</html>
