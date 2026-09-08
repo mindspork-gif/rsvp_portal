@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Check-In</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f5f4f1;
+      color: #1a1a18;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 17px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 16px 80px;
+    }
+
+    header { width: 100%; max-width: 640px; margin-bottom: 24px; border-bottom: 1.5px solid #c8c6be; padding-bottom: 18px; }
+    .logo-line { font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #5a5a55; margin-bottom: 6px; font-weight: 500; }
+    h1 { font-size: 26px; font-weight: 600; color: #1a1a18; }
+    h1 span { color: #2563eb; }
+    .event-name { font-size: 15px; color: #5a5a55; margin-top: 4px; }
+
+    .search-wrap { width: 100%; max-width: 640px; margin-bottom: 16px; position: relative; }
+    .search-input {
+      width: 100%;
+      background: #ffffff;
+      border: 1.5px solid #b0aea6;
+      color: #1a1a18;
+      font-size: 18px;
+      padding: 13px 16px 13px 44px;
+      border-radius: 10px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .search-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; color: #8a8880; pointer-events: none; }
+
+    .count-bar { width: 100%; max-width: 640px; font-size: 13px; color: #5a5a55; margin-bottom: 12px; display: flex; justify-content: space-between; }
+    .count-bar strong { color: #1a1a18; }
+
+    .attendee-list { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 10px; }
+
+    .attendee-card {
+      background: #ffffff;
+      border: 1.5px solid #c8c6be;
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: border-color 0.15s;
+    }
+
+    .attendee-card.checked-in { border-color: #16a34a; background: #f0fdf4; }
+
+    .attendee-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
+
+    .attendee-names { flex: 1; }
+    .name-primary { font-size: 18px; font-weight: 600; color: #1a1a18; }
+    .name-secondary { font-size: 14px; color: #5a5a55; margin-top: 2px; }
+
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+      letter-spacing: 0.04em;
+    }
+    .badge-pending  { background: #fffbeb; color: #b45309; border: 1px solid #d97706; }
+    .badge-accepted { background: #eff6ff; color: #1d4ed8; border: 1px solid #2563eb; }
+    .badge-new      { background: #fef2f2; color: #b91c1c; border: 1px solid #dc2626; }
+
+    .volunteer-tag { font-size: 13px; color: #5a5a55; margin-bottom: 12px; }
+    .volunteer-tag strong { color: #1a1a18; }
+
+    .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+    .check-control { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 12px; background: #f5f4f1; border: 1.5px solid #b0aea6; border-radius: 8px; transition: all 0.15s; user-select: none; }
+    .check-control:hover { border-color: #2563eb; background: #eff6ff; }
+    .check-control.checked { background: #eff6ff; border-color: #2563eb; }
+    .check-control input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2563eb; cursor: pointer; flex-shrink: 0; }
+    .check-control label { font-size: 15px; font-weight: 500; color: #1a1a18; cursor: pointer; white-space: nowrap; }
+
+    .fee-control { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+    .fee-label { font-size: 15px; font-weight: 500; color: #1a1a18; }
+    .fee-options { display: flex; gap: 4px; }
+    .fee-btn {
+      padding: 7px 10px;
+      background: #f5f4f1;
+      border: 1.5px solid #b0aea6;
+      color: #3a3a36;
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .fee-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+    .fee-btn.selected { background: #2563eb; color: #ffffff; border-color: #2563eb; }
+
+    .save-indicator { font-size: 13px; color: #16a34a; font-weight: 500; opacity: 0; transition: opacity 0.3s; margin-top: 8px; }
+    .save-indicator.show { opacity: 1; }
+
+    .empty-state { width: 100%; max-width: 640px; text-align: center; padding: 60px 20px; color: #8a8880; font-size: 16px; }
+
+    .loading { width: 100%; max-width: 640px; text-align: center; padding: 60px 20px; color: #5a5a55; font-size: 16px; }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #b0aea6; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer { margin-top: 40px; font-size: 13px; color: #8a8880; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-line">Admin // Check-In</div>
+    <h1>Event <span>Check-In</span></h1>
+    <div class="event-name" id="event-name">Loading...</div>
+  </header>
+
+  <div class="search-wrap">
+    <span class="search-icon">&#128269;</span>
+    <input class="search-input" type="text" id="search" placeholder="Search by fetname, facename, or moniker..." autocomplete="off" oninput="filterList()" />
+  </div>
+
+  <div class="count-bar">
+    <span id="count-label">Loading attendees...</span>
+    <span id="checked-in-count"></span>
+  </div>
+
+  <div id="attendee-list" class="attendee-list">
+    <div class="loading"><span class="spinner"></span>Loading attendees...</div>
+  </div>
+
+  <footer>Check-in portal &mdash; admin use only</footer>
+
+  <script>
+    var API_URL = 'https://script.google.com/macros/s/AKfycbzR86hw389rrdPFnlOR1l41Vmv9jtRby9yNugMJCpc710tbpX_6Wmzw1YTGUABYLN1nLA/exec';
+    var allAttendees = [];
+
+    function buildUrl(params) {
+      var parts = Object.keys(params).map(function(k) {
+        return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+      });
+      return API_URL + '?' + parts.join('&');
+    }
+
+    function loadAttendees() {
+      fetch(buildUrl({ action: 'getAttendees' }))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.success) {
+            document.getElementById('attendee-list').innerHTML = '<div class="empty-state">' + data.message + '</div>';
+            return;
+          }
+          document.getElementById('event-name').textContent = data.eventName;
+          allAttendees = data.attendees;
+          renderList(allAttendees);
+        })
+        .catch(function() {
+          document.getElementById('attendee-list').innerHTML = '<div class="empty-state">Could not load attendees. Check your connection.</div>';
+        });
+    }
+
+    function filterList() {
+      var q = document.getElementById('search').value.trim().toLowerCase();
+      if (!q) { renderList(allAttendees); return; }
+      var filtered = allAttendees.filter(function(a) {
+        return a.fname.toLowerCase().includes(q) ||
+               a.bname.toLowerCase().includes(q) ||
+               a.ipname.toLowerCase().includes(q);
+      });
+      renderList(filtered);
+    }
+
+    function renderList(attendees) {
+      var list = document.getElementById('attendee-list');
+      updateCounts(attendees);
+
+      if (attendees.length === 0) {
+        list.innerHTML = '<div class="empty-state">No attendees found.</div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      attendees.forEach(function(a) {
+        list.appendChild(buildCard(a));
+      });
+    }
+
+    function updateCounts(attendees) {
+      var total    = allAttendees.length;
+      var showing  = attendees.length;
+      var checkedIn = allAttendees.filter(function(a) { return a.did_attend; }).length;
+      document.getElementById('count-label').innerHTML = 'Showing <strong>' + showing + '</strong> of <strong>' + total + '</strong> RSVPs';
+      document.getElementById('checked-in-count').innerHTML = '<strong>' + checkedIn + '</strong> checked in';
+    }
+
+    function buildCard(a) {
+      var card = document.createElement('div');
+      card.className = 'attendee-card' + (a.did_attend ? ' checked-in' : '');
+      card.id = 'card-' + a.row;
+
+      // Badge
+      var badge = '';
+      if (a.prior === 'no' && a.accepted !== 'yes' && a.accepted !== true) {
+        badge = '<span class="badge badge-new">New / Pending</span>';
+      } else if (a.accepted === 'yes' || a.accepted === true) {
+        badge = '<span class="badge badge-accepted">Accepted</span>';
+      } else {
+        badge = '<span class="badge badge-pending">Prior Attendee</span>';
+      }
+
+      // Secondary names
+      var secondaryParts = [];
+      if (a.bname) secondaryParts.push('Facename: ' + a.bname);
+      if (a.ipname) secondaryParts.push(a.ipname);
+
+      // Volunteer info
+      var volunteerHtml = '';
+      if (a.volunteer) {
+        volunteerHtml = '<div class="volunteer-tag"><strong>Volunteer:</strong> ' + a.volunteer + '</div>';
+      }
+
+      // Fee display
+      var currentFee = parseInt(a.fee) || 0;
+
+      card.innerHTML =
+        '<div class="attendee-header">' +
+          '<div class="attendee-names">' +
+            '<div class="name-primary">' + (a.fname || a.bname || 'Unknown') + '</div>' +
+            (secondaryParts.length ? '<div class="name-secondary">' + secondaryParts.join(' &nbsp;&middot;&nbsp; ') + '</div>' : '') +
+          '</div>' +
+          badge +
+        '</div>' +
+        volunteerHtml +
+        '<div class="controls">' +
+          '<div class="check-control' + (a.did_attend ? ' checked' : '') + '" id="attend-ctrl-' + a.row + '" onclick="toggleAttend(' + a.row + ')">' +
+            '<input type="checkbox" id="attend-' + a.row + '"' + (a.did_attend ? ' checked' : '') + ' onclick="event.stopPropagation()" onchange="toggleAttend(' + a.row + ')" />' +
+            '<label for="attend-' + a.row + '">Attended</label>' +
+          '</div>' +
+          '<div class="check-control' + (a.did_volunteer ? ' checked' : '') + '" id="vol-ctrl-' + a.row + '" onclick="toggleVolunteer(' + a.row + ')">' +
+            '<input type="checkbox" id="vol-' + a.row + '"' + (a.did_volunteer ? ' checked' : '') + ' onclick="event.stopPropagation()" onchange="toggleVolunteer(' + a.row + ')" />' +
+            '<label for="vol-' + a.row + '">Volunteered</label>' +
+          '</div>' +
+          '<div class="fee-control">' +
+            '<span class="fee-label">Fee $</span>' +
+            '<div class="fee-options">' +
+              [0, 5, 10, 15, 20].map(function(f) {
+                return '<button class="fee-btn' + (currentFee === f ? ' selected' : '') + '" id="fee-' + a.row + '-' + f + '" onclick="setFee(' + a.row + ',' + f + ')">' + f + '</button>';
+              }).join('') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="save-indicator" id="saved-' + a.row + '">&#10003; Saved</div>';
+
+      return card;
+    }
+
+    function getAttendeeByRow(row) {
+      return allAttendees.find(function(a) { return a.row === row; });
+    }
+
+    function showSaved(row) {
+      var el = document.getElementById('saved-' + row);
+      if (!el) return;
+      el.classList.add('show');
+      setTimeout(function() { el.classList.remove('show'); }, 1800);
+    }
+
+    function save(row, field, value) {
+      fetch(buildUrl({ action: 'updateAttendee', row: row, field: field, value: value }))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) showSaved(row);
+        });
+    }
+
+    function toggleAttend(row) {
+      var a = getAttendeeByRow(row);
+      if (!a) return;
+      a.did_attend = !a.did_attend;
+      var cb   = document.getElementById('attend-' + row);
+      var ctrl = document.getElementById('attend-ctrl-' + row);
+      var card = document.getElementById('card-' + row);
+      cb.checked = a.did_attend;
+      ctrl.classList.toggle('checked', a.did_attend);
+      card.classList.toggle('checked-in', a.did_attend);
+      save(row, 'did_attend', a.did_attend ? 'yes' : 'no');
+      updateCounts(allAttendees.filter(function(x) {
+        var q = document.getElementById('search').value.trim().toLowerCase();
+        if (!q) return true;
+        return x.fname.toLowerCase().includes(q) || x.bname.toLowerCase().includes(q) || x.ipname.toLowerCase().includes(q);
+      }));
+    }
+
+    function toggleVolunteer(row) {
+      var a = getAttendeeByRow(row);
+      if (!a) return;
+      a.did_volunteer = !a.did_volunteer;
+      var cb   = document.getElementById('vol-' + row);
+      var ctrl = document.getElementById('vol-ctrl-' + row);
+      cb.checked = a.did_volunteer;
+      ctrl.classList.toggle('checked', a.did_volunteer);
+      save(row, 'did_volunteer', a.did_volunteer ? 'yes' : 'no');
+    }
+
+    function setFee(row, fee) {
+      var a = getAttendeeByRow(row);
+      if (!a) return;
+      a.fee = fee;
+      [0, 5, 10, 15, 20].forEach(function(f) {
+        var btn = document.getElementById('fee-' + row + '-' + f);
+        if (btn) btn.classList.toggle('selected', f === fee);
+      });
+      save(row, 'fee', String(fee).padStart(2, '0'));
+    }
+
+    loadAttendees();
+  </script>
+</body>
+</html>
