@@ -107,6 +107,12 @@
 
     .empty-state { width: 100%; max-width: 640px; text-align: center; padding: 60px 20px; color: #8a8880; font-size: 16px; }
 
+    .sort-bar { width: 100%; max-width: 640px; display: flex; gap: 6px; margin-bottom: 14px; }
+    .sort-btn { flex: 1; padding: 9px 10px; background: #ffffff; border: 1.5px solid #b0aea6; color: #5a5a55; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; text-align: center; }
+    .sort-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+    .sort-btn.active-asc::after { content: " ↑"; }
+    .sort-btn.active-desc::after { content: " ↓"; }
+    .sort-btn.active-asc, .sort-btn.active-desc { border-color: #2563eb; background: #eff6ff; color: #1d4ed8; }
     .loading { width: 100%; max-width: 640px; text-align: center; padding: 60px 20px; color: #5a5a55; font-size: 16px; }
     .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid #b0aea6; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -132,6 +138,12 @@
     <span id="checked-in-count"></span>
   </div>
 
+  <div class="sort-bar">
+    <button class="sort-btn" id="sort-fname" onclick="sortBy('fname')">Fetname</button>
+    <button class="sort-btn" id="sort-bname" onclick="sortBy('bname')">Facename</button>
+    <button class="sort-btn" id="sort-ipname" onclick="sortBy('ipname')">Moniker</button>
+  </div>
+
   <div id="attendee-list" class="attendee-list">
     <div class="loading"><span class="spinner"></span>Loading attendees...</div>
   </div>
@@ -141,6 +153,44 @@
   <script>
     var API_URL = 'https://script.google.com/macros/s/AKfycbzR86hw389rrdPFnlOR1l41Vmv9jtRby9yNugMJCpc710tbpX_6Wmzw1YTGUABYLN1nLA/exec';
     var allAttendees = [];
+    var sortField = null;
+    var sortDir   = 'asc';
+
+    function sortBy(field) {
+      if (sortField === field) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortField = field;
+        sortDir = 'asc';
+      }
+      // Update button states
+      ['fname','bname','ipname'].forEach(function(f) {
+        var btn = document.getElementById('sort-' + f);
+        btn.className = 'sort-btn';
+        if (f === sortField) btn.classList.add('active-' + sortDir);
+      });
+      applyFilterAndSort();
+    }
+
+    function applyFilterAndSort() {
+      var q = document.getElementById('search').value.trim().toLowerCase();
+      var filtered = allAttendees.filter(function(a) {
+        if (!q) return true;
+        return a.fname.toLowerCase().includes(q) ||
+               a.bname.toLowerCase().includes(q) ||
+               a.ipname.toLowerCase().includes(q);
+      });
+      if (sortField) {
+        filtered.sort(function(a, b) {
+          var av = (a[sortField] || '').toLowerCase();
+          var bv = (b[sortField] || '').toLowerCase();
+          if (av < bv) return sortDir === 'asc' ? -1 :  1;
+          if (av > bv) return sortDir === 'asc' ?  1 : -1;
+          return 0;
+        });
+      }
+      renderList(filtered);
+    }
 
     function buildUrl(params) {
       var parts = Object.keys(params).map(function(k) {
@@ -167,14 +217,7 @@
     }
 
     function filterList() {
-      var q = document.getElementById('search').value.trim().toLowerCase();
-      if (!q) { renderList(allAttendees); return; }
-      var filtered = allAttendees.filter(function(a) {
-        return a.fname.toLowerCase().includes(q) ||
-               a.bname.toLowerCase().includes(q) ||
-               a.ipname.toLowerCase().includes(q);
-      });
-      renderList(filtered);
+      applyFilterAndSort();
     }
 
     function renderList(attendees) {
