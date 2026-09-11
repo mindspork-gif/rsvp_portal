@@ -51,6 +51,17 @@
     .result-colon { font-size: 13px; color: #5a5a55; margin-right: 6px; }
     .result-value { font-size: 18px; font-weight: 600; color: #1a1a18; }
     .result-chevron { font-size: 20px; color: #b0aea6; }
+    .new-badge { font-size: 11px; font-variant: small-caps; font-weight: 600; letter-spacing: .1em; color: #b45309; background: #fef3c7; border: 1px solid #d97706; border-radius: 4px; padding: 2px 7px; white-space: nowrap; }
+    .new-overlay-badge { display: inline-block; font-size: 13px; font-variant: small-caps; font-weight: 600; letter-spacing: .08em; color: #b45309; background: #fef3c7; border: 1px solid #d97706; border-radius: 6px; padding: 4px 10px; margin-bottom: 14px; }
+    .greeted-wrap { display: flex; align-items: center; gap: 12px; background: #fef3c7; border: 1.5px solid #d97706; border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; cursor: pointer; transition: all 0.15s; user-select: none; }
+    .greeted-wrap.done { background: #f0fdf4; border-color: #16a34a; }
+    .greeted-wrap:focus { outline: 3px solid #fbbf24; outline-offset: 2px; }
+    .greeted-cb { width: 22px; height: 22px; border: 2px solid #d97706; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; transition: all 0.15s; background: #fff; }
+    .greeted-wrap.done .greeted-cb { background: #16a34a; border-color: #16a34a; color: #fff; }
+    .greeted-label { font-size: 15px; font-weight: 500; color: #b45309; }
+    .greeted-wrap.done .greeted-label { color: #15803d; }
+    .greeted-error { font-size: 13px; color: #b91c1c; font-weight: 500; margin-top: -10px; margin-bottom: 10px; display: none; }
+    .greeted-error.show { display: block; }
 
     .empty-state { width: 100%; max-width: 760px; text-align: center; padding: 48px 20px; color: #8a8880; font-size: 16px; }
     .loading { text-align: center; padding: 48px 20px; color: #5a5a55; font-size: 16px; }
@@ -260,6 +271,7 @@
     var selectedPayment = '';
     var qrPayAmount = null;
     var allNamesRow = null;
+    var greetedChecked = false;
     var selectedAmount = null;
 
     var QR_FILES = { Venmo: 'vn.png', CashApp: 'ca.png' };
@@ -364,6 +376,7 @@
             '<span class="result-field">' + fieldLabels[hit.field] + '</span>' +
             '<span class="result-colon">:</span>' +
             '<span class="result-value">' + esc(hit.value) + '</span>' +
+            (hit.attendee.prior === 'no' ? ' <span class="new-badge">new</span>' : '') +
           '</div>' +
           '<span class="result-chevron">›</span>' +
         '</div>';
@@ -376,6 +389,7 @@
       activeAttendee = allAttendees.find(function(a) { return a.row === row; });
       if (!activeAttendee) return;
       compAcknowledged = false;
+      greetedChecked = false;
       selectedPayment = activeAttendee.payment || '';
       selectedAmount = parseInt(activeAttendee.fee) || null;
       if (!activeAttendee.worked_shifts) activeAttendee.worked_shifts = {};
@@ -403,7 +417,15 @@
       // Checked in status
       var checkedIn = a.did_attend ? '<span class="badge" style="background:#f0fdf4;color:#15803d;border:1px solid #16a34a;">Checked In ✓</span>' : '<span class="badge" style="background:#f5f4f1;color:#5a5a55;border:1px solid #b0aea6;">Not Checked In</span>';
 
+      var isNew = a.prior === 'no';
       var html = checkedIn + ' ' + badge + '<br><br>';
+      if (isNew) {
+        html += '<div class="greeted-wrap" id="greeted-wrap" tabindex="0" onclick="toggleGreeted()" onkeydown="if(event.key===\'Enter\'||event.key===\' \')toggleGreeted()">'
+             + '<div class="greeted-cb" id="greeted-cb"></div>'
+             + '<span class="greeted-label" id="greeted-label">&#9733; First-time attendee &mdash; tap to confirm greeted</span>'
+             + '</div>'
+             + '<div class="greeted-error" id="greeted-error">Please confirm the attendee has been greeted before completing check-in.</div>';
+      }
 
       // Identity grid — suppress empty fields
       var identityRows = '';
@@ -507,12 +529,25 @@
 
     function confirmQrPayment() {
       if (!activeAttendee) return;
+      if (activeAttendee.prior === 'no' && !greetedChecked) {
+        closeQrPay();
+        var err = document.getElementById('greeted-error');
+        var wrap = document.getElementById('greeted-wrap');
+        if (err) err.classList.add('show');
+        if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       var row = activeAttendee.row;
       var fee = qrPayAmount !== null ? String(qrPayAmount).padStart(2,'0') : '00';
+      var now = new Date();
+      var chkday = now.toISOString().slice(0,10);
+      var chktime = now.toTimeString().slice(0,8);
       var saves = [
         save(row, 'did_attend', 'yes'),
         save(row, 'payment', selectedPayment),
-        save(row, 'fee', fee)
+        save(row, 'fee', fee),
+        save(row, 'chkday', chkday),
+        save(row, 'chktime', chktime)
       ];
       if (activeAttendee.worked_shifts) {
         var worked = Object.keys(activeAttendee.worked_shifts).some(function(s) { return activeAttendee.worked_shifts[s]; });
@@ -604,13 +639,20 @@
 
     function confirmComp() {
       if (!activeAttendee) return;
+      if (activeAttendee.prior === 'no' && !greetedChecked) {
+        closeCompPopup();
+        var err = document.getElementById('greeted-error');
+        var wrap = document.getElementById('greeted-wrap');
+        if (err) err.classList.add('show');
+        if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       var row = activeAttendee.row;
       document.getElementById('comp-popup-bg').classList.remove('show');
       var saves = [
         save(row, 'did_attend', 'yes'),
         save(row, 'fee', '00'),
         save(row, 'payment', 'Comp'),
-        save(row, 'comp', 'yes')
       ];
       Promise.all(saves).then(function() { resetToSearch(); });
     }
@@ -618,6 +660,15 @@
     function doCheckIn() {
       if (!activeAttendee) return;
       var a = activeAttendee;
+
+      // First-time attendee must be greeted
+      if (activeAttendee.prior === 'no' && !greetedChecked) {
+        var err = document.getElementById('greeted-error');
+        var wrap = document.getElementById('greeted-wrap');
+        if (err) err.classList.add('show');
+        if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
 
       if (selectedPayment === 'Comp') {
         if (!compAcknowledged) {
@@ -632,7 +683,10 @@
         return;
       }
 
-      var saves = [save(a.row, 'did_attend', 'yes')];
+      var now = new Date();
+      var chkday = now.toISOString().slice(0,10);
+      var chktime = now.toTimeString().slice(0,8);
+      var saves = [save(a.row, 'did_attend', 'yes'), save(a.row, 'chkday', chkday), save(a.row, 'chktime', chktime)];
       if (selectedPayment) saves.push(save(a.row, 'payment', selectedPayment));
       if (selectedAmount !== null) saves.push(save(a.row, 'fee', String(selectedAmount).padStart(2,'0')));
 
@@ -675,6 +729,18 @@
       document.getElementById('clear-btn').style.display = 'none';
       currentResults = [];
       document.getElementById('search').focus();
+    }
+
+    function toggleGreeted() {
+      greetedChecked = !greetedChecked;
+      var wrap = document.getElementById('greeted-wrap');
+      var cb   = document.getElementById('greeted-cb');
+      var lbl  = document.getElementById('greeted-label');
+      var err  = document.getElementById('greeted-error');
+      if (wrap) wrap.classList.toggle('done', greetedChecked);
+      if (cb)   cb.textContent = greetedChecked ? '✓' : '';
+      if (lbl)  lbl.textContent = greetedChecked ? '★ First-time attendee — greeted' : '★ First-time attendee — tap to confirm greeted';
+      if (err)  err.classList.remove('show');
     }
 
     function openAllNames(row) {
