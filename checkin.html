@@ -195,8 +195,8 @@
     var selectedPayment = '';
     var selectedAmount = null;
 
-    var QR_FILES = { Venmo: 'vn.png', CashApp: 'ca.png', Zelle: 'ze.png', PayPal: 'pp.png' };
-    var PAYMENT_METHODS = ['Cash', 'Venmo', 'CashApp', 'Zelle', 'PayPal', 'Comp'];
+    var QR_FILES = { Venmo: 'vn.png', CashApp: 'ca.png' };
+    var PAYMENT_METHODS = ['Cash', 'Venmo', 'CashApp', 'Comp'];
 
     function buildUrl(params) {
       return API_URL + '?' + Object.keys(params).map(function(k) {
