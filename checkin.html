@@ -333,13 +333,17 @@
       else if (a.accepted === 'yes' || a.accepted === true) badge = '<span class="badge badge-accepted">Accepted</span>';
       else badge = '<span class="badge badge-prior">Prior Attendee</span>';
 
-      var html = '<p class="overlay-name">' + esc(a.fname || a.bname || 'Unknown') + '</p>' + badge;
+      // Checked in status
+      var checkedIn = a.did_attend ? '<span class="badge" style="background:#f0fdf4;color:#15803d;border:1px solid #16a34a;">Checked In ✓</span>' : '<span class="badge" style="background:#f5f4f1;color:#5a5a55;border:1px solid #b0aea6;">Not Checked In</span>';
 
-      html += '<div class="identity-grid">' +
-        '<span class="identity-label">Fetname</span><span class="identity-value">' + esc(a.fname || '—') + '</span>' +
-        '<span class="identity-label">Facename</span><span class="identity-value">' + esc(a.bname || '—') + '</span>' +
-        '<span class="identity-label">Moniker</span><span class="identity-value">' + esc(a.ipname || '—') + '</span>' +
-      '</div>';
+      var html = checkedIn + ' ' + badge + '<br><br>';
+
+      // Identity grid — suppress empty fields
+      var identityRows = '';
+      if (a.fname) identityRows += '<span class="identity-label">Fetname</span><span class="identity-value">' + esc(a.fname) + '</span>';
+      if (a.bname) identityRows += '<span class="identity-label">Facename</span><span class="identity-value">' + esc(a.bname) + '</span>';
+      if (a.ipname) identityRows += '<span class="identity-label">Moniker</span><span class="identity-value">' + esc(a.ipname) + '</span>';
+      html += '<div class="identity-grid">' + identityRows + '</div>';
 
       // Volunteer shifts
       if (a.volunteer && a.volunteer.trim()) {
