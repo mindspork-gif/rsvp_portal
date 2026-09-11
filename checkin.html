@@ -156,6 +156,26 @@
     .save-indicator { font-size: 14px; color: #16a34a; font-weight: 500; opacity: 0; transition: opacity 0.3s; margin-top: 10px; min-height: 20px; text-align: center; }
     .save-indicator.show { opacity: 1; }
 
+    /* All Names popup */
+    .allnames-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
+    .allnames-bg.show { display: flex; }
+    .allnames-box { background: #fff; border: 1.5px solid #c8c6be; border-radius: 14px; padding: 24px; width: 100%; max-width: 380px; }
+    .allnames-title { font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #5a5a55; margin-bottom: 16px; }
+    .allnames-grid { display: grid; grid-template-columns: 90px 1fr; gap: 10px 14px; font-size: 16px; margin-bottom: 20px; }
+    .allnames-label { color: #5a5a55; font-weight: 500; }
+    .allnames-value { color: #1a1a18; font-weight: 500; }
+    .allnames-btns { display: flex; gap: 8px; }
+    .btn-allnames-confirm { flex: 1; padding: 14px; background: #2563eb; border: none; color: #fff; font-size: 16px; font-weight: 600; border-radius: 9px; cursor: pointer; transition: background 0.15s; }
+    .btn-allnames-confirm:hover { background: #1d4ed8; }
+    .btn-allnames-confirm:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .btn-allnames-back { padding: 14px 18px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #5a5a55; font-size: 16px; font-weight: 500; border-radius: 9px; cursor: pointer; transition: all 0.15s; }
+    .btn-allnames-back:hover { border-color: #1a1a18; color: #1a1a18; }
+    .btn-allnames-back:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    /* All Names button on result row */
+    .all-names-btn { padding: 8px 13px; background: #f5f4f1; border: 1.5px solid #b0aea6; border-radius: 7px; font-size: 13px; font-weight: 500; color: #5a5a55; white-space: nowrap; cursor: pointer; transition: all 0.15s; }
+    .all-names-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+    .all-names-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
     footer { margin-top: 40px; font-size: 13px; color: #8a8880; }
   </style>
 </head>
@@ -214,6 +234,18 @@
     </div>
   </div>
 
+  <!-- All Names popup -->
+  <div class="allnames-bg" id="allnames-bg" role="dialog" aria-modal="true">
+    <div class="allnames-box">
+      <p class="allnames-title">All Names</p>
+      <div class="allnames-grid" id="allnames-grid"></div>
+      <div class="allnames-btns">
+        <button class="btn-allnames-confirm" id="btn-allnames-confirm" onclick="confirmAllNames()">Confirm</button>
+        <button class="btn-allnames-back" onclick="closeAllNames()">Back</button>
+      </div>
+    </div>
+  </div>
+
   <footer>Check-in portal &mdash; admin use only</footer>
 
   <script>
@@ -227,6 +259,7 @@
     var compAcknowledged = false;
     var selectedPayment = '';
     var qrPayAmount = null;
+    var allNamesRow = null;
     var selectedAmount = null;
 
     var QR_FILES = { Venmo: 'vn.png', CashApp: 'ca.png' };
@@ -635,12 +668,39 @@
     }
 
     function clearResults() {
+      document.getElementById('allnames-bg').classList.remove('show');
       document.getElementById('search').value = '';
       document.getElementById('results-container').innerHTML = '';
       document.getElementById('sort-row').style.display = 'none';
       document.getElementById('clear-btn').style.display = 'none';
       currentResults = [];
       document.getElementById('search').focus();
+    }
+
+    function openAllNames(row) {
+      var a = allAttendees.find(function(x) { return x.row === row; });
+      if (!a) return;
+      allNamesRow = row;
+      var grid = document.getElementById('allnames-grid');
+      var html = '';
+      if (a.fname) html += '<span class="allnames-label">Fetname</span><span class="allnames-value">' + esc(a.fname) + '</span>';
+      if (a.bname) html += '<span class="allnames-label">Facename</span><span class="allnames-value">' + esc(a.bname) + '</span>';
+      if (a.ipname) html += '<span class="allnames-label">Moniker</span><span class="allnames-value">' + esc(a.ipname) + '</span>';
+      if (!html) html = '<span class="allnames-label" style="grid-column:1/-1;color:#8a8880;">No names on record.</span>';
+      grid.innerHTML = html;
+      document.getElementById('allnames-bg').classList.add('show');
+      document.getElementById('btn-allnames-confirm').focus();
+    }
+
+    function closeAllNames() {
+      document.getElementById('allnames-bg').classList.remove('show');
+      allNamesRow = null;
+    }
+
+    function confirmAllNames() {
+      var row = allNamesRow;
+      closeAllNames();
+      if (row) openOverlay(row);
     }
 
     function resetToSearch() {
@@ -663,6 +723,7 @@
     // Escape key handling
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
+        if (document.getElementById('allnames-bg').classList.contains('show')) { closeAllNames(); return; }
         if (document.getElementById('qr-pay-bg').classList.contains('show')) { closeQrPay(); return; }
         if (document.getElementById('comp-popup-bg').classList.contains('show')) { closeCompPopup(); return; }
         if (document.getElementById('overlay-bg').classList.contains('show')) { closeOverlay(); return; }
