@@ -27,46 +27,19 @@
 
     /* Search */
     .search-wrap { width: 100%; max-width: 640px; display: flex; gap: 8px; margin-bottom: 20px; }
-    .search-input {
-      flex: 1;
-      background: #ffffff;
-      border: 1.5px solid #b0aea6;
-      color: #1a1a18;
-      font-size: 17px;
-      padding: 12px 16px;
-      border-radius: 10px;
-      outline: none;
-      font-family: inherit;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
+    .search-input { flex: 1; background: #ffffff; border: 1.5px solid #b0aea6; color: #1a1a18; font-size: 17px; padding: 12px 16px; border-radius: 10px; outline: none; font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s; }
     .search-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
-    .search-btn {
-      padding: 12px 22px;
-      background: #2563eb;
-      border: none;
-      color: #ffffff;
-      font-size: 17px;
-      font-weight: 600;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.15s;
-      white-space: nowrap;
-    }
+    .search-btn { padding: 12px 22px; background: #2563eb; border: none; color: #ffffff; font-size: 17px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
+    .search-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
     .search-btn:hover { background: #1d4ed8; }
 
-    /* Results */
     .results-label { width: 100%; max-width: 640px; font-size: 13px; color: #5a5a55; margin-bottom: 12px; }
     .results-label strong { color: #1a1a18; }
 
     .attendee-list { width: 100%; max-width: 640px; display: flex; flex-direction: column; gap: 12px; }
 
-    .attendee-card {
-      background: #ffffff;
-      border: 1.5px solid #c8c6be;
-      border-radius: 12px;
-      padding: 18px 20px;
-      transition: border-color 0.15s;
-    }
+    /* Card */
+    .attendee-card { background: #ffffff; border: 1.5px solid #c8c6be; border-radius: 12px; padding: 18px 20px; }
     .attendee-card.checked-in { border-color: #16a34a; background: #f0fdf4; }
 
     .attendee-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 12px; }
@@ -79,81 +52,62 @@
     .badge-accepted { background: #eff6ff; color: #1d4ed8; border: 1px solid #2563eb; }
     .badge-prior    { background: #f0fdf4; color: #15803d; border: 1px solid #16a34a; }
 
-    /* Controls row */
-    .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .section-divider { border: none; border-top: 1px solid #e0ded8; margin: 12px 0; }
+    .section-heading { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: #5a5a55; margin-bottom: 8px; }
 
     /* Check-in button */
-    .checkin-btn {
-      padding: 9px 16px;
-      background: #f5f4f1;
-      border: 1.5px solid #b0aea6;
-      color: #1a1a18;
-      font-size: 15px;
-      font-weight: 500;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
+    .checkin-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #1a1a18; font-size: 15px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+    .checkin-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
     .checkin-btn:hover { border-color: #16a34a; color: #15803d; background: #f0fdf4; }
     .checkin-btn.checked { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
-    .checkin-btn .cb { width: 18px; height: 18px; border: 1.5px solid #b0aea6; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 13px; transition: all 0.15s; flex-shrink: 0; }
-    .checkin-btn.checked .cb { background: #16a34a; border-color: #16a34a; color: #fff; }
+    .cb-box { width: 18px; height: 18px; border-radius: 4px; border: 1.5px solid #b0aea6; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.15s; flex-shrink: 0; }
+    .checkin-btn.checked .cb-box { background: #16a34a; border-color: #16a34a; color: #fff; }
 
-    /* Volunteer shifts */
-    .volunteer-section { margin-top: 10px; }
-    .volunteer-label { font-size: 13px; font-weight: 600; color: #5a5a55; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.08em; }
+    /* Shift buttons */
     .shift-btns { display: flex; flex-wrap: wrap; gap: 6px; }
-    .shift-btn {
-      padding: 7px 12px;
-      background: #f5f4f1;
-      border: 1.5px solid #b0aea6;
-      color: #3a3a36;
-      font-size: 14px;
-      font-weight: 500;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
+    .shift-btn { padding: 8px 13px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #3a3a36; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+    .shift-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
     .shift-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
     .shift-btn.worked { background: #eff6ff; border-color: #2563eb; color: #1d4ed8; }
 
-    /* Fee */
-    .fee-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-    .fee-label { font-size: 15px; font-weight: 500; color: #1a1a18; }
-    .fee-options { display: flex; gap: 4px; }
-    .fee-btn { padding: 7px 11px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #3a3a36; font-size: 14px; font-weight: 500; border-radius: 6px; cursor: pointer; transition: all 0.15s; }
+    /* Fee buttons */
+    .fee-btns { display: flex; gap: 4px; }
+    .fee-btn { padding: 8px 13px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #3a3a36; font-size: 15px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+    .fee-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
     .fee-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
     .fee-btn.selected { background: #2563eb; color: #ffffff; border-color: #2563eb; }
 
-    .divider-line { border: none; border-top: 1px solid #e0ded8; margin: 12px 0; }
+    /* Payment buttons */
+    .payment-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+    .payment-btn { padding: 8px 14px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #3a3a36; font-size: 15px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+    .payment-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .payment-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+    .payment-btn.selected { background: #2563eb; color: #ffffff; border-color: #2563eb; }
 
-    .save-indicator { font-size: 13px; color: #16a34a; font-weight: 500; opacity: 0; transition: opacity 0.3s; margin-top: 8px; height: 18px; }
+    /* Complete button */
+    .complete-btn { width: 100%; padding: 13px; background: #16a34a; border: none; color: #ffffff; font-size: 17px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.15s; margin-top: 14px; display: none; }
+    .complete-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .complete-btn:hover { background: #15803d; }
+
+    .save-indicator { font-size: 13px; color: #16a34a; font-weight: 500; opacity: 0; transition: opacity 0.3s; margin-top: 10px; min-height: 18px; }
     .save-indicator.show { opacity: 1; }
+
+    /* QR overlay */
+    .qr-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; align-items: center; justify-content: center; }
+    .qr-overlay.show { display: flex; }
+    .qr-box { background: #ffffff; border-radius: 16px; padding: 32px; max-width: 320px; width: 90%; text-align: center; position: relative; }
+    .qr-title { font-size: 18px; font-weight: 600; color: #1a1a18; margin-bottom: 16px; }
+    .qr-img { width: 220px; height: 220px; object-fit: contain; border-radius: 8px; border: 1.5px solid #e0ded8; }
+    .qr-img-placeholder { width: 220px; height: 220px; background: #f5f4f1; border-radius: 8px; border: 1.5px solid #e0ded8; display: flex; align-items: center; justify-content: center; font-size: 13px; color: #8a8880; margin: 0 auto; }
+    .qr-close { margin-top: 20px; width: 100%; padding: 12px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #1a1a18; font-size: 16px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+    .qr-close:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .qr-close:hover { background: #e0ded8; }
 
     .empty-state { width: 100%; max-width: 640px; text-align: center; padding: 48px 20px; color: #8a8880; font-size: 16px; }
     .loading { text-align: center; padding: 48px 20px; color: #5a5a55; font-size: 16px; }
     .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #b0aea6; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .complete-btn {
-      width: 100%;
-      max-width: 640px;
-      margin-top: 20px;
-      padding: 14px;
-      background: transparent;
-      border: 1.5px solid #b0aea6;
-      color: #5a5a55;
-      font-size: 17px;
-      font-weight: 600;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: all 0.15s;
-      display: none;
-    }
-    .complete-btn:hover { border-color: #1a1a18; color: #1a1a18; background: #e8e6df; }
     footer { margin-top: 40px; font-size: 13px; color: #8a8880; }
   </style>
 </head>
@@ -166,15 +120,25 @@
   </header>
 
   <div class="search-wrap">
-    <input class="search-input" type="text" id="search" placeholder="Fetname, facename, or moniker..." autocomplete="off"
+    <input class="search-input" type="text" id="search"
+      placeholder="Fetname, facename, or moniker..."
+      autocomplete="off"
       onkeydown="if(event.key==='Enter') doSearch()" />
     <button class="search-btn" onclick="doSearch()">Search</button>
   </div>
 
   <div class="results-label" id="results-label"></div>
   <div id="attendee-list" class="attendee-list"></div>
+  <button class="complete-btn" id="complete-btn" onclick="resetPage()">Payment complete &mdash; clear and next</button>
 
-  <button class="complete-btn" id="complete-btn" onclick="resetPage()">Complete &amp; Clear</button>
+  <!-- QR overlay -->
+  <div class="qr-overlay" id="qr-overlay" role="dialog" aria-modal="true" aria-labelledby="qr-title">
+    <div class="qr-box">
+      <p class="qr-title" id="qr-title">Scan to pay</p>
+      <div id="qr-content"></div>
+      <button class="qr-close" id="qr-close" onclick="closeQr()">Close</button>
+    </div>
+  </div>
 
   <footer>Check-in portal &mdash; admin use only</footer>
 
@@ -182,13 +146,26 @@
     var API_URL = 'https://script.google.com/macros/s/AKfycbzR86hw389rrdPFnlOR1l41Vmv9jtRby9yNugMJCpc710tbpX_6Wmzw1YTGUABYLN1nLA/exec';
     var allAttendees = [];
     var loaded = false;
+    var qrPrev = null; // element to return focus to after closing QR
+
+    var QR_FILES = {
+      'Venmo':   'vn.png',
+      'CashApp': 'ca.png',
+      'Zelle':   'ze.png',
+      'PayPal':  'pp.png'
+    };
 
     function buildUrl(params) {
-      var parts = Object.keys(params).map(function(k) {
+      return API_URL + '?' + Object.keys(params).map(function(k) {
         return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
-      });
-      return API_URL + '?' + parts.join('&');
+      }).join('&');
     }
+
+    function escapeHtml(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function encodeShift(s) { return s.replace(/[^a-zA-Z0-9]/g,'_'); }
 
     function loadAttendees(cb) {
       if (loaded) { cb(); return; }
@@ -196,7 +173,7 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (!data.success) {
-            document.getElementById('attendee-list').innerHTML = '<div class="empty-state">' + data.message + '</div>';
+            document.getElementById('attendee-list').innerHTML = '<div class="empty-state">' + escapeHtml(data.message) + '</div>';
             return;
           }
           document.getElementById('event-name').textContent = data.eventName;
@@ -205,7 +182,7 @@
           cb();
         })
         .catch(function() {
-          document.getElementById('attendee-list').innerHTML = '<div class="empty-state">Could not load attendees. Check your connection.</div>';
+          document.getElementById('attendee-list').innerHTML = '<div class="empty-state">Could not load attendees. Check connection.</div>';
         });
     }
 
@@ -214,42 +191,40 @@
       if (!q) {
         document.getElementById('results-label').innerHTML = '';
         document.getElementById('attendee-list').innerHTML = '';
+        document.getElementById('complete-btn').style.display = 'none';
         return;
       }
-
       document.getElementById('attendee-list').innerHTML = '<div class="loading"><span class="spinner"></span>Searching...</div>';
-
       loadAttendees(function() {
         var results = allAttendees.filter(function(a) {
           return a.fname.toLowerCase().includes(q) ||
                  a.bname.toLowerCase().includes(q) ||
                  a.ipname.toLowerCase().includes(q);
         });
-
         var label = document.getElementById('results-label');
         if (results.length === 0) {
           label.innerHTML = '';
-          document.getElementById('attendee-list').innerHTML = '<div class="empty-state">No matches found for &ldquo;' + escapeHtml(q) + '&rdquo;.</div>';
+          document.getElementById('attendee-list').innerHTML = '<div class="empty-state">No matches for &ldquo;' + escapeHtml(q) + '&rdquo;.</div>';
+          document.getElementById('complete-btn').style.display = 'none';
         } else {
           label.innerHTML = 'Found <strong>' + results.length + '</strong> match' + (results.length !== 1 ? 'es' : '');
           var list = document.getElementById('attendee-list');
           list.innerHTML = '';
           results.forEach(function(a) { list.appendChild(buildCard(a)); });
           document.getElementById('complete-btn').style.display = 'block';
+          // Focus first focusable element in first card
+          var first = list.querySelector('button, [tabindex="0"]');
+          if (first) first.focus();
         }
       });
-    }
-
-    function escapeHtml(s) {
-      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
     function buildCard(a) {
       var card = document.createElement('div');
       card.className = 'attendee-card' + (a.did_attend ? ' checked-in' : '');
       card.id = 'card-' + a.row;
+      if (!a.worked_shifts) a.worked_shifts = {};
 
-      // Badge
       var badge = '';
       if (a.prior === 'no' && a.accepted !== 'yes' && a.accepted !== true) {
         badge = '<span class="badge badge-pending">New / Pending</span>';
@@ -259,30 +234,58 @@
         badge = '<span class="badge badge-prior">Prior Attendee</span>';
       }
 
-      // Secondary names
       var secondary = [];
-      if (a.bname) secondary.push('Facename: ' + escapeHtml(a.bname));
+      if (a.bname)  secondary.push('Facename: ' + escapeHtml(a.bname));
       if (a.ipname) secondary.push(escapeHtml(a.ipname));
 
-      // Fee
       var currentFee = parseInt(a.fee) || 0;
+      var currentPayment = a.payment || '';
 
-      // Volunteer shifts — only show if they signed up
-      var volunteerHtml = '';
+      // Volunteer shifts section
+      var shiftHtml = '';
       if (a.volunteer && a.volunteer.trim() !== '') {
         var shifts = a.volunteer.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
         if (shifts.length > 0) {
-          var shiftBtns = shifts.map(function(s) {
-            var worked = a.worked_shifts && a.worked_shifts[s];
-            return '<button class="shift-btn' + (worked ? ' worked' : '') + '" id="shift-' + a.row + '-' + encodeShift(s) + '" onclick="toggleShift(' + a.row + ', \'' + escapeHtml(s) + '\')">' + escapeHtml(s) + '</button>';
-          }).join('');
-          volunteerHtml =
-            '<div class="volunteer-section">' +
-              '<div class="volunteer-label">Volunteer shifts</div>' +
-              '<div class="shift-btns">' + shiftBtns + '</div>' +
+          shiftHtml = '<hr class="section-divider">' +
+            '<div class="section-heading">Volunteer shifts</div>' +
+            '<div class="shift-btns">' +
+            shifts.map(function(s) {
+              var sid = 'shift-' + a.row + '-' + encodeShift(s);
+              return '<button class="shift-btn" id="' + sid + '" ' +
+                'onclick="toggleShift(' + a.row + ',\'' + escapeHtml(s) + '\')" ' +
+                'aria-pressed="false">' + escapeHtml(s) + '</button>';
+            }).join('') +
             '</div>';
         }
       }
+
+      // Fee section
+      var feeHtml = '<hr class="section-divider">' +
+        '<div class="section-heading">Fee</div>' +
+        '<div class="fee-btns">' +
+        [0,5,10,15,20].map(function(f) {
+          return '<button class="fee-btn' + (currentFee === f ? ' selected' : '') + '" ' +
+            'id="fee-' + a.row + '-' + f + '" ' +
+            'onclick="setFee(' + a.row + ',' + f + ')" ' +
+            'aria-pressed="' + (currentFee === f ? 'true' : 'false') + '">' +
+            '$' + f + '</button>';
+        }).join('') +
+        '</div>';
+
+      // Payment section
+      var paymentMethods = ['Cash','Venmo','CashApp','Zelle','PayPal'];
+      var paymentHtml = '<hr class="section-divider">' +
+        '<div class="section-heading">Payment method</div>' +
+        '<div class="payment-btns">' +
+        paymentMethods.map(function(m) {
+          var sel = currentPayment === m;
+          return '<button class="payment-btn' + (sel ? ' selected' : '') + '" ' +
+            'id="pay-' + a.row + '-' + m + '" ' +
+            'onclick="selectPayment(' + a.row + ',\'' + m + '\')" ' +
+            'aria-pressed="' + (sel ? 'true' : 'false') + '">' +
+            escapeHtml(m) + '</button>';
+        }).join('') +
+        '</div>';
 
       card.innerHTML =
         '<div class="attendee-header">' +
@@ -292,36 +295,19 @@
           '</div>' +
           badge +
         '</div>' +
-
-        '<div class="controls">' +
-          '<button class="checkin-btn' + (a.did_attend ? ' checked' : '') + '" id="checkin-btn-' + a.row + '" onclick="toggleAttend(' + a.row + ')">' +
-            '<span class="cb">' + (a.did_attend ? '&#10003;' : '') + '</span>' +
-            '<span>' + (a.did_attend ? 'Checked In' : 'Check In') + '</span>' +
-          '</button>' +
-        '</div>' +
-
-        (volunteerHtml ? '<hr class="divider-line">' + volunteerHtml : '') +
-
-        '<hr class="divider-line">' +
-        '<div class="fee-row">' +
-          '<span class="fee-label">Fee $</span>' +
-          '<div class="fee-options">' +
-            [0, 5, 10, 15, 20].map(function(f) {
-              return '<button class="fee-btn' + (currentFee === f ? ' selected' : '') + '" id="fee-' + a.row + '-' + f + '" onclick="setFee(' + a.row + ',' + f + ')">' + f + '</button>';
-            }).join('') +
-          '</div>' +
-        '</div>' +
-
+        '<button class="checkin-btn' + (a.did_attend ? ' checked' : '') + '" ' +
+          'id="checkin-btn-' + a.row + '" ' +
+          'onclick="toggleAttend(' + a.row + ')" ' +
+          'aria-pressed="' + (a.did_attend ? 'true' : 'false') + '">' +
+          '<span class="cb-box">' + (a.did_attend ? '&#10003;' : '') + '</span>' +
+          '<span>' + (a.did_attend ? 'Checked in' : 'Check in') + '</span>' +
+        '</button>' +
+        shiftHtml +
+        feeHtml +
+        paymentHtml +
         '<div class="save-indicator" id="saved-' + a.row + '">&#10003; Saved</div>';
 
-      // Init worked_shifts tracker on the attendee object
-      if (!a.worked_shifts) a.worked_shifts = {};
-
       return card;
-    }
-
-    function encodeShift(s) {
-      return s.replace(/[^a-zA-Z0-9]/g, '_');
     }
 
     function getAttendeeByRow(row) {
@@ -349,7 +335,8 @@
       var card = document.getElementById('card-' + row);
       if (btn) {
         btn.className = 'checkin-btn' + (a.did_attend ? ' checked' : '');
-        btn.innerHTML = '<span class="cb">' + (a.did_attend ? '&#10003;' : '') + '</span><span>' + (a.did_attend ? 'Checked In' : 'Check In') + '</span>';
+        btn.setAttribute('aria-pressed', a.did_attend ? 'true' : 'false');
+        btn.innerHTML = '<span class="cb-box">' + (a.did_attend ? '&#10003;' : '') + '</span><span>' + (a.did_attend ? 'Checked in' : 'Check in') + '</span>';
       }
       if (card) card.classList.toggle('checked-in', a.did_attend);
       save(row, 'did_attend', a.did_attend ? 'yes' : 'no');
@@ -360,13 +347,12 @@
       if (!a) return;
       if (!a.worked_shifts) a.worked_shifts = {};
       a.worked_shifts[shift] = !a.worked_shifts[shift];
-
       var btn = document.getElementById('shift-' + row + '-' + encodeShift(shift));
-      if (btn) btn.classList.toggle('worked', a.worked_shifts[shift]);
-
-      // Build comma-separated list of worked shifts and save to did_volunteer field
-      var worked = Object.keys(a.worked_shifts).filter(function(s) { return a.worked_shifts[s]; });
-      a.did_volunteer = worked.length > 0;
+      if (btn) {
+        btn.classList.toggle('worked', a.worked_shifts[shift]);
+        btn.setAttribute('aria-pressed', a.worked_shifts[shift] ? 'true' : 'false');
+      }
+      a.did_volunteer = Object.keys(a.worked_shifts).some(function(s) { return a.worked_shifts[s]; });
       save(row, 'did_volunteer', a.did_volunteer ? 'yes' : 'no');
     }
 
@@ -374,12 +360,72 @@
       var a = getAttendeeByRow(row);
       if (!a) return;
       a.fee = fee;
-      [0, 5, 10, 15, 20].forEach(function(f) {
+      [0,5,10,15,20].forEach(function(f) {
         var btn = document.getElementById('fee-' + row + '-' + f);
-        if (btn) btn.classList.toggle('selected', f === fee);
+        if (btn) {
+          btn.classList.toggle('selected', f === fee);
+          btn.setAttribute('aria-pressed', f === fee ? 'true' : 'false');
+        }
       });
       save(row, 'fee', String(fee).padStart(2, '0'));
     }
+
+    function selectPayment(row, method) {
+      var a = getAttendeeByRow(row);
+      if (!a) return;
+      var prev = a.payment;
+      a.payment = (prev === method) ? '' : method; // toggle off if same
+
+      ['Cash','Venmo','CashApp','Zelle','PayPal'].forEach(function(m) {
+        var btn = document.getElementById('pay-' + row + '-' + m);
+        if (btn) {
+          btn.classList.toggle('selected', m === a.payment);
+          btn.setAttribute('aria-pressed', m === a.payment ? 'true' : 'false');
+        }
+      });
+
+      save(row, 'payment', a.payment);
+
+      // Show QR for digital methods
+      if (a.payment && a.payment !== 'Cash' && QR_FILES[a.payment]) {
+        var triggerBtn = document.getElementById('pay-' + row + '-' + a.payment);
+        openQr(a.payment, QR_FILES[a.payment], triggerBtn);
+      }
+    }
+
+    function openQr(method, file, triggerEl) {
+      qrPrev = triggerEl || document.activeElement;
+      document.getElementById('qr-title').textContent = 'Scan to pay via ' + method;
+      var content = document.getElementById('qr-content');
+      var img = new Image();
+      img.className = 'qr-img';
+      img.alt = method + ' QR code';
+      img.style.display = 'block';
+      img.style.margin = '0 auto';
+      img.onerror = function() {
+        content.innerHTML = '<div class="qr-img-placeholder">QR image not found<br>' + file + '</div>';
+      };
+      img.src = file;
+      content.innerHTML = '';
+      content.appendChild(img);
+      var overlay = document.getElementById('qr-overlay');
+      overlay.classList.add('show');
+      document.getElementById('qr-close').focus();
+    }
+
+    function closeQr() {
+      document.getElementById('qr-overlay').classList.remove('show');
+      if (qrPrev) { qrPrev.focus(); qrPrev = null; }
+    }
+
+    // Close QR on overlay background click or Escape
+    document.getElementById('qr-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeQr();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeQr();
+    });
+
     function resetPage() {
       document.getElementById('search').value = '';
       document.getElementById('attendee-list').innerHTML = '';
@@ -387,7 +433,6 @@
       document.getElementById('complete-btn').style.display = 'none';
       document.getElementById('search').focus();
     }
-
   </script>
 </body>
 </html>
