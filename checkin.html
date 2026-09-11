@@ -132,6 +132,27 @@
     .btn-comp-confirm:hover { background: #b45309; }
     .btn-comp-confirm:focus { outline: 3px solid #fbbf24; outline-offset: 2px; }
 
+    /* QR Payment overlay */
+    .qr-pay-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+    .qr-pay-bg.show { display: flex; }
+    .qr-pay-box { background: #ffffff; border-radius: 20px; border: 1.5px solid #c8c6be; padding: 32px 28px; width: 100%; max-width: 520px; text-align: center; }
+    .qr-pay-title { font-size: 13px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #5a5a55; margin-bottom: 20px; }
+    .qr-pay-img { width: 380px; height: 380px; max-width: 100%; object-fit: contain; border-radius: 12px; border: 1.5px solid #e0ded8; display: block; margin: 0 auto 24px; }
+    .qr-pay-placeholder { width: 380px; height: 380px; max-width: 100%; background: #f5f4f1; border-radius: 12px; border: 1.5px solid #e0ded8; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #8a8880; margin: 0 auto 24px; }
+    .qr-pay-amount-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: #5a5a55; margin-bottom: 12px; }
+    .qr-pay-amount-btns { display: flex; justify-content: center; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; }
+    .qr-pay-amount-btn { width: 72px; height: 72px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #3a3a36; font-size: 18px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+    .qr-pay-amount-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+    .qr-pay-amount-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .qr-pay-amount-btn.selected { background: #2563eb; border-color: #2563eb; color: #fff; }
+    .btn-payment-confirmed { width: 100%; padding: 16px; background: #16a34a; border: none; color: #fff; font-size: 18px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: background 0.15s; margin-bottom: 10px; display: none; }
+    .btn-payment-confirmed.show { display: block; }
+    .btn-payment-confirmed:hover { background: #15803d; }
+    .btn-payment-confirmed:focus { outline: 3px solid #86efac; outline-offset: 2px; }
+    .btn-qr-cancel { width: 100%; padding: 13px; background: transparent; border: 1.5px solid #b0aea6; color: #5a5a55; font-size: 16px; font-weight: 500; border-radius: 10px; cursor: pointer; transition: all 0.15s; }
+    .btn-qr-cancel:hover { border-color: #1a1a18; color: #1a1a18; }
+    .btn-qr-cancel:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+
     .save-indicator { font-size: 14px; color: #16a34a; font-weight: 500; opacity: 0; transition: opacity 0.3s; margin-top: 10px; min-height: 20px; text-align: center; }
     .save-indicator.show { opacity: 1; }
 
@@ -171,6 +192,18 @@
     </div>
   </div>
 
+  <!-- QR Payment overlay -->
+  <div class="qr-pay-bg" id="qr-pay-bg" role="dialog" aria-modal="true">
+    <div class="qr-pay-box">
+      <p class="qr-pay-title">Scan to pay</p>
+      <div id="qr-pay-img-wrap"></div>
+      <p class="qr-pay-amount-label">Select amount</p>
+      <div class="qr-pay-amount-btns" id="qr-pay-amount-btns"></div>
+      <button class="btn-payment-confirmed" id="btn-payment-confirmed" onclick="confirmQrPayment()">Payment Confirmed</button>
+      <button class="btn-qr-cancel" onclick="closeQrPay()">Cancel</button>
+    </div>
+  </div>
+
   <!-- Comp confirmation popup -->
   <div class="comp-popup-bg" id="comp-popup-bg" role="dialog" aria-modal="true">
     <div class="comp-popup" id="comp-popup">
@@ -193,6 +226,7 @@
     var activeAttendee = null;
     var compAcknowledged = false;
     var selectedPayment = '';
+    var qrPayAmount = null;
     var selectedAmount = null;
 
     var QR_FILES = { Venmo: 'vn.png', CashApp: 'ca.png' };
@@ -391,6 +425,79 @@
         btn.className = base + (sel ? ' selected' : '');
         btn.setAttribute('aria-pressed', sel ? 'true' : 'false');
       });
+      // Open QR overlay for digital methods
+      if (method === 'Venmo' || method === 'CashApp') {
+        openQrPay(method);
+        return;
+      }
+      renderPaymentDetail();
+    }
+
+    function openQrPay(method) {
+      qrPayAmount = null;
+      var qrFile = QR_FILES[method];
+      var imgWrap = document.getElementById('qr-pay-img-wrap');
+      var img = new Image();
+      img.className = 'qr-pay-img';
+      img.alt = method + ' QR code';
+      img.onerror = function() {
+        imgWrap.innerHTML = '<div class="qr-pay-placeholder">' + esc(qrFile) + '<br>not found</div>';
+      };
+      img.src = qrFile;
+      imgWrap.innerHTML = '';
+      imgWrap.appendChild(img);
+
+      // Build amount buttons
+      var amtHtml = '';
+      [0,5,10,15,20].forEach(function(f) {
+        amtHtml += '<button class="qr-pay-amount-btn" id="qramt-' + f + '" onclick="selectQrAmount(' + f + ')" aria-pressed="false">$' + f + '</button>';
+      });
+      document.getElementById('qr-pay-amount-btns').innerHTML = amtHtml;
+      document.getElementById('btn-payment-confirmed').className = 'btn-payment-confirmed';
+
+      document.getElementById('qr-pay-bg').classList.add('show');
+      setTimeout(function() {
+        var first = document.getElementById('qr-pay-amount-btns').querySelector('button');
+        if (first) first.focus();
+      }, 50);
+    }
+
+    function selectQrAmount(amt) {
+      qrPayAmount = amt;
+      [0,5,10,15,20].forEach(function(f) {
+        var btn = document.getElementById('qramt-' + f);
+        if (btn) { btn.className = 'qr-pay-amount-btn' + (f === amt ? ' selected' : ''); btn.setAttribute('aria-pressed', f === amt ? 'true' : 'false'); }
+      });
+      document.getElementById('btn-payment-confirmed').className = 'btn-payment-confirmed show';
+      document.getElementById('btn-payment-confirmed').focus();
+    }
+
+    function confirmQrPayment() {
+      if (!activeAttendee) return;
+      var row = activeAttendee.row;
+      var fee = qrPayAmount !== null ? String(qrPayAmount).padStart(2,'0') : '00';
+      var saves = [
+        save(row, 'did_attend', 'yes'),
+        save(row, 'payment', selectedPayment),
+        save(row, 'fee', fee)
+      ];
+      if (activeAttendee.worked_shifts) {
+        var worked = Object.keys(activeAttendee.worked_shifts).some(function(s) { return activeAttendee.worked_shifts[s]; });
+        saves.push(save(row, 'did_volunteer', worked ? 'yes' : 'no'));
+      }
+      Promise.all(saves).then(function() {
+        document.getElementById('qr-pay-bg').classList.remove('show');
+        resetToSearch();
+      });
+    }
+
+    function closeQrPay() {
+      document.getElementById('qr-pay-bg').classList.remove('show');
+      selectedPayment = '';
+      PAYMENT_METHODS.forEach(function(m) {
+        var btn = document.getElementById('pay-' + m);
+        if (btn) { btn.className = 'payment-btn' + (m === 'Comp' ? ' comp-btn' : ''); btn.setAttribute('aria-pressed','false'); }
+      });
       renderPaymentDetail();
     }
 
@@ -556,6 +663,7 @@
     // Escape key handling
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
+        if (document.getElementById('qr-pay-bg').classList.contains('show')) { closeQrPay(); return; }
         if (document.getElementById('comp-popup-bg').classList.contains('show')) { closeCompPopup(); return; }
         if (document.getElementById('overlay-bg').classList.contains('show')) { closeOverlay(); return; }
       }
