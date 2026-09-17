@@ -168,6 +168,21 @@
     .save-indicator { font-size: 14px; color: #16a34a; font-weight: 500; opacity: 0; transition: opacity 0.3s; margin-top: 10px; min-height: 20px; text-align: center; }
     .save-indicator.show { opacity: 1; }
 
+    /* PIN screen */
+    .pin-screen { display: flex; position: fixed; inset: 0; background: #f5f4f1; z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .pin-box { background: #fff; border: 1.5px solid #c8c6be; border-radius: 16px; padding: 40px 32px; width: 100%; max-width: 400px; text-align: center; }
+    .pin-logo { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #5a5a55; margin-bottom: 8px; font-weight: 500; }
+    .pin-title { font-size: 22px; font-weight: 600; color: #1a1a18; margin-bottom: 6px; }
+    .pin-title span { color: #2563eb; }
+    .pin-subtitle { font-size: 14px; color: #8a8880; margin-bottom: 28px; }
+    .pin-input { width: 100%; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #1a1a18; font-size: 28px; letter-spacing: 0.4em; padding: 14px; border-radius: 10px; outline: none; text-align: center; font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s; margin-bottom: 16px; }
+    .pin-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .pin-submit { width: 100%; padding: 14px; background: #2563eb; border: none; color: #fff; font-size: 17px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+    .pin-submit:hover { background: #1d4ed8; }
+    .pin-submit:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .pin-error { font-size: 14px; color: #b91c1c; font-weight: 500; margin-top: 12px; min-height: 20px; }
+    .pin-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+
     /* Intro popup */
     .intro-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 400; align-items: center; justify-content: center; padding: 20px; }
     .intro-bg.show { display: flex; }
@@ -209,6 +224,19 @@
   </style>
 </head>
 <body>
+
+  <!-- PIN screen -->
+  <div class="pin-screen" id="pin-screen">
+    <div class="pin-box">
+      <p class="pin-logo">Admin // Check-In</p>
+      <h1 class="pin-title">Event <span>Check-In</span></h1>
+      <p class="pin-subtitle">Enter your 8-digit access PIN to continue</p>
+      <input class="pin-input" type="password" id="pin-input" maxlength="8" placeholder="••••••••" autocomplete="off" inputmode="numeric" pattern="[0-9]*"
+        onkeydown="if(event.key==='Enter') submitPin()" />
+      <button class="pin-submit" onclick="submitPin()">Unlock</button>
+      <p class="pin-error" id="pin-error"></p>
+    </div>
+  </div>
 
   <header>
     <div class="logo-line">Admin // Check-In</div>
@@ -429,6 +457,10 @@
       compAcknowledged = false;
       greetedChecked = false;
       selectedPayment = activeAttendee.payment || '';
+      setTimeout(function() {
+        var btn = document.getElementById('btn-checkin');
+        if (btn) btn.style.display = selectedPayment === 'Comp' ? 'none' : '';
+      }, 50);
       selectedAmount = parseInt(activeAttendee.fee) || null;
       if (!activeAttendee.worked_shifts) activeAttendee.worked_shifts = {};
       renderOverlay();
@@ -523,6 +555,9 @@
         openQrPay(method);
         return;
       }
+      // Hide main Check In button for Comp — flow handled by comp popup
+      var checkinBtn = document.getElementById('btn-checkin');
+      if (checkinBtn) checkinBtn.style.display = method === 'Comp' ? 'none' : '';
       renderPaymentDetail();
     }
 
@@ -859,6 +894,45 @@
         if (document.getElementById('overlay-bg').classList.contains('show')) { closeOverlay(); return; }
       }
     });
+    // ── PIN AUTHENTICATION ──
+    function submitPin() {
+      var pin = document.getElementById('pin-input').value.trim();
+      var err = document.getElementById('pin-error');
+      var btn = document.querySelector('.pin-submit');
+
+      if (pin.length !== 8) {
+        err.textContent = 'PIN must be 8 digits.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="pin-spinner"></span>Checking...';
+      err.textContent = '';
+
+      fetch(buildUrl({ action: 'verifyPin', pin: pin, page: 'checkin' }))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            document.getElementById('pin-screen').style.display = 'none';
+          } else {
+            err.textContent = data.message || 'Incorrect PIN.';
+            btn.disabled = false;
+            btn.textContent = 'Unlock';
+            document.getElementById('pin-input').value = '';
+            document.getElementById('pin-input').focus();
+          }
+        })
+        .catch(function() {
+          err.textContent = 'Could not reach server. Please try again.';
+          btn.disabled = false;
+          btn.textContent = 'Unlock';
+        });
+    }
+
+    document.getElementById('pin-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') submitPin();
+    });
+
   </script>
 </body>
 </html>

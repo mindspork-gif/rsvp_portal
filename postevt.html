@@ -1,0 +1,349 @@
+<!-- VERSION: V1 | DATE: 2026-09-17 -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Post-Event Processing</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f5f4f1;
+      color: #1a1a18;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 17px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 36px 24px 80px;
+    }
+
+    /* PIN screen */
+    .pin-screen { display: flex; position: fixed; inset: 0; background: #f5f4f1; z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+    .pin-box { background: #fff; border: 1.5px solid #c8c6be; border-radius: 16px; padding: 40px 32px; width: 100%; max-width: 400px; text-align: center; }
+    .pin-logo { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #5a5a55; margin-bottom: 8px; font-weight: 500; }
+    .pin-title { font-size: 22px; font-weight: 600; color: #1a1a18; margin-bottom: 6px; }
+    .pin-title span { color: #2563eb; }
+    .pin-subtitle { font-size: 14px; color: #8a8880; margin-bottom: 28px; }
+    .pin-input { width: 100%; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #1a1a18; font-size: 28px; letter-spacing: 0.4em; padding: 14px; border-radius: 10px; outline: none; text-align: center; font-family: inherit; transition: border-color 0.15s, box-shadow 0.15s; margin-bottom: 16px; }
+    .pin-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+    .pin-submit { width: 100%; padding: 14px; background: #2563eb; border: none; color: #fff; font-size: 17px; font-weight: 600; border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+    .pin-submit:hover { background: #1d4ed8; }
+    .pin-error { font-size: 14px; color: #b91c1c; font-weight: 500; margin-top: 12px; min-height: 20px; }
+    .pin-spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+
+    header { width: 80%; margin: 0 auto 28px; border-bottom: 1.5px solid #c8c6be; padding-bottom: 18px; }
+    .logo-line { font-size: 12px; letter-spacing: .18em; text-transform: uppercase; color: #5a5a55; margin-bottom: 6px; font-weight: 500; }
+    h1 { font-size: 26px; font-weight: 600; color: #1a1a18; }
+    h1 span { color: #2563eb; }
+    .event-name { font-size: 15px; color: #5a5a55; margin-top: 4px; }
+
+    .summary-bar { width: 80%; margin: 0 auto 28px; background: #fff; border: 1.5px solid #c8c6be; border-radius: 12px; padding: 18px 24px; font-size: 15px; color: #5a5a55; }
+    .summary-bar strong { color: #1a1a18; }
+
+    .no-show-list { width: 80%; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+
+    .ns-card {
+      background: #fff;
+      border: 1.5px solid #c8c6be;
+      border-radius: 12px;
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .ns-card.processing { border-color: #2563eb; background: #eff6ff; }
+    .ns-card.done { border-color: #16a34a; background: #f0fdf4; opacity: 0.6; }
+
+    .ns-body { flex: 1; padding: 18px 20px; }
+
+    .ns-names { margin-bottom: 14px; }
+    .ns-name-row { font-size: 13px; color: #5a5a55; margin-bottom: 3px; }
+    .ns-name-row strong { font-size: 16px; color: #1a1a18; margin-left: 4px; }
+
+    .ns-row-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .1em; color: #8a8880; margin-bottom: 8px; }
+
+    .shift-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    .shift-btn { padding: 8px 14px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #3a3a36; font-size: 14px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; }
+    .shift-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+    .shift-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .shift-btn.worked { background: #eff6ff; border-color: #2563eb; color: #1d4ed8; }
+
+    .fee-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+    .fee-btn { width: 60px; height: 60px; background: #f5f4f1; border: 1.5px solid #b0aea6; color: #3a3a36; font-size: 16px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; }
+    .fee-btn:hover { border-color: #2563eb; color: #2563eb; background: #eff6ff; }
+    .fee-btn:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .fee-btn.selected { background: #2563eb; border-color: #2563eb; color: #fff; }
+
+    .ns-checkin-btn {
+      width: 80px;
+      flex-shrink: 0;
+      background: #16a34a;
+      border: none;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      letter-spacing: 0.1em;
+    }
+    .ns-checkin-btn:hover { background: #15803d; }
+    .ns-checkin-btn:focus { outline: 3px solid #86efac; outline-offset: 2px; }
+    .ns-checkin-btn:disabled { background: #b0aea6; cursor: not-allowed; }
+
+    .save-flash { font-size: 13px; color: #16a34a; font-weight: 500; opacity: 0; transition: opacity 0.3s; margin-top: 8px; min-height: 18px; }
+    .save-flash.show { opacity: 1; }
+
+    .empty-state { width: 80%; margin: 60px auto; text-align: center; color: #8a8880; font-size: 16px; }
+    .loading { width: 80%; margin: 60px auto; text-align: center; color: #5a5a55; font-size: 16px; }
+    .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #b0aea6; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.6s linear infinite; margin-right: 8px; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    footer { margin-top: 40px; font-size: 13px; color: #8a8880; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <!-- PIN screen -->
+  <div class="pin-screen" id="pin-screen">
+    <div class="pin-box">
+      <p class="pin-logo">Admin // Post-Event</p>
+      <h1 class="pin-title">Post-Event <span>Processing</span></h1>
+      <p class="pin-subtitle">Enter your 8-digit access PIN to continue</p>
+      <input class="pin-input" type="password" id="pin-input" maxlength="8" placeholder="••••••••" autocomplete="off" inputmode="numeric" pattern="[0-9]*"
+        onkeydown="if(event.key==='Enter') submitPin()" />
+      <button class="pin-submit" id="pin-submit" onclick="submitPin()">Unlock</button>
+      <p class="pin-error" id="pin-error"></p>
+    </div>
+  </div>
+
+  <header>
+    <div class="logo-line">Admin // Post-Event Processing</div>
+    <h1>No-Show <span>Processing</span></h1>
+    <div class="event-name" id="event-name">&nbsp;</div>
+  </header>
+
+  <div class="summary-bar" id="summary-bar" style="display:none;"></div>
+  <div id="no-show-container"><div class="loading"><span class="spinner"></span>Loading...</div></div>
+
+  <footer>Post-event portal &mdash; admin use only</footer>
+
+  <script>
+    var API_URL = 'https://script.google.com/macros/s/AKfycbzR86hw389rrdPFnlOR1l41Vmv9jtRby9yNugMJCpc710tbpX_6Wmzw1YTGUABYLN1nLA/exec';
+    var noShowData = [];
+
+    function buildUrl(params) {
+      return API_URL + '?' + Object.keys(params).map(function(k) {
+        return encodeURIComponent(k) + '=' + encodeURIComponent(params[k]);
+      }).join('&');
+    }
+
+    function esc(s) {
+      return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function encShift(s) { return s.replace(/[^a-zA-Z0-9]/g,'_'); }
+
+    // ── PIN ──
+    function submitPin() {
+      var pin = document.getElementById('pin-input').value.trim();
+      var err = document.getElementById('pin-error');
+      var btn = document.getElementById('pin-submit');
+
+      if (pin.length !== 8) { err.textContent = 'PIN must be 8 digits.'; return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="pin-spinner"></span>Checking...';
+      err.textContent = '';
+
+      fetch(buildUrl({ action: 'verifyPin', pin: pin, page: 'postevt' }))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            document.getElementById('pin-screen').style.display = 'none';
+            loadNoShows();
+          } else {
+            err.textContent = data.message || 'Incorrect PIN.';
+            btn.disabled = false;
+            btn.textContent = 'Unlock';
+            document.getElementById('pin-input').value = '';
+            document.getElementById('pin-input').focus();
+          }
+        })
+        .catch(function() {
+          err.textContent = 'Could not reach server. Please try again.';
+          btn.disabled = false;
+          btn.textContent = 'Unlock';
+        });
+    }
+
+    // ── DATA ──
+    function loadNoShows() {
+      document.getElementById('no-show-container').innerHTML = '<div class="loading"><span class="spinner"></span>Loading...</div>';
+
+      fetch(buildUrl({ action: 'getNoShows' }))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.success) {
+            document.getElementById('no-show-container').innerHTML = '<div class="empty-state">' + esc(data.message) + '</div>';
+            return;
+          }
+          document.getElementById('event-name').textContent = data.eventName;
+          noShowData = data.noShows;
+          renderSummary();
+          renderNoShows();
+        })
+        .catch(function() {
+          document.getElementById('no-show-container').innerHTML = '<div class="empty-state">Could not load data. Check connection.</div>';
+        });
+    }
+
+    function renderSummary() {
+      var bar = document.getElementById('summary-bar');
+      bar.style.display = 'block';
+      bar.innerHTML = '<strong>' + noShowData.length + '</strong> RSVPs not yet checked in';
+    }
+
+    function renderNoShows() {
+      var container = document.getElementById('no-show-container');
+      if (!noShowData.length) {
+        container.innerHTML = '<div class="empty-state">All RSVPs have been checked in.</div>';
+        return;
+      }
+
+      container.innerHTML = '';
+      var list = document.createElement('div');
+      list.className = 'no-show-list';
+
+      noShowData.forEach(function(a) {
+        if (!a.worked_shifts) a.worked_shifts = {};
+        a.selected_fee = parseInt(a.fee) || null;
+        list.appendChild(buildCard(a));
+      });
+
+      container.appendChild(list);
+    }
+
+    function buildCard(a) {
+      var card = document.createElement('div');
+      card.className = 'ns-card';
+      card.id = 'nscard-' + a.row;
+
+      // Names
+      var namesHtml = '<div class="ns-names">';
+      if (a.fname) namesHtml += '<div class="ns-name-row"><span style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;">fetname</span><strong>' + esc(a.fname) + '</strong></div>';
+      if (a.bname) namesHtml += '<div class="ns-name-row"><span style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;">facename</span><strong>' + esc(a.bname) + '</strong></div>';
+      if (a.ipname) namesHtml += '<div class="ns-name-row"><span style="text-transform:uppercase;letter-spacing:.08em;font-size:12px;">moniker</span><strong>' + esc(a.ipname) + '</strong></div>';
+      namesHtml += '</div>';
+
+      // Volunteer shifts
+      var shiftHtml = '';
+      if (a.volunteer && a.volunteer.trim()) {
+        var shifts = a.volunteer.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+        if (shifts.length) {
+          shiftHtml = '<div class="ns-row-label">Volunteer shifts</div><div class="shift-btns">';
+          shifts.forEach(function(s) {
+            var sid = 'nsshift-' + a.row + '-' + encShift(s);
+            shiftHtml += '<button class="shift-btn" id="' + sid + '" onclick="toggleShift(' + a.row + ',\'' + esc(s) + '\')" aria-pressed="false">' + esc(s) + '</button>';
+          });
+          shiftHtml += '</div>';
+        }
+      }
+
+      // Fee
+      var currentFee = parseInt(a.fee) || 0;
+      var feeHtml = '<div class="ns-row-label" style="margin-top:10px;">Fee</div><div class="fee-btns">';
+      [0,5,10,15,20].forEach(function(f) {
+        feeHtml += '<button class="fee-btn' + (currentFee === f ? ' selected' : '') + '" id="nsfee-' + a.row + '-' + f + '" onclick="setFee(' + a.row + ',' + f + ')" aria-pressed="' + (currentFee === f ? 'true' : 'false') + '">$' + f + '</button>';
+      });
+      feeHtml += '</div>';
+
+      var bodyHtml = namesHtml + shiftHtml + feeHtml + '<div class="save-flash" id="nsflash-' + a.row + '"></div>';
+
+      card.innerHTML =
+        '<div class="ns-body">' + bodyHtml + '</div>' +
+        '<button class="ns-checkin-btn" id="nscheckin-' + a.row + '" onclick="checkInNoShow(' + a.row + ')">Check In</button>';
+
+      return card;
+    }
+
+    function getNoShowByRow(row) {
+      return noShowData.find(function(a) { return a.row === row; });
+    }
+
+    function showFlash(row) {
+      var el = document.getElementById('nsflash-' + row);
+      if (!el) return;
+      el.textContent = '✓ Saved';
+      el.classList.add('show');
+      setTimeout(function() { el.classList.remove('show'); el.textContent = ''; }, 1800);
+    }
+
+    function save(row, field, value) {
+      return fetch(buildUrl({ action: 'updateAttendee', row: row, field: field, value: value }))
+        .then(function(r) { return r.json(); });
+    }
+
+    function toggleShift(row, shift) {
+      var a = getNoShowByRow(row);
+      if (!a) return;
+      if (!a.worked_shifts) a.worked_shifts = {};
+      a.worked_shifts[shift] = !a.worked_shifts[shift];
+      var btn = document.getElementById('nsshift-' + row + '-' + encShift(shift));
+      if (btn) { btn.classList.toggle('worked', a.worked_shifts[shift]); btn.setAttribute('aria-pressed', a.worked_shifts[shift] ? 'true' : 'false'); }
+      var worked = Object.keys(a.worked_shifts).some(function(s) { return a.worked_shifts[s]; });
+      save(row, 'did_volunteer', worked ? 'yes' : 'no');
+    }
+
+    function setFee(row, fee) {
+      var a = getNoShowByRow(row);
+      if (!a) return;
+      a.selected_fee = fee;
+      [0,5,10,15,20].forEach(function(f) {
+        var btn = document.getElementById('nsfee-' + row + '-' + f);
+        if (btn) { btn.classList.toggle('selected', f === fee); btn.setAttribute('aria-pressed', f === fee ? 'true' : 'false'); }
+      });
+    }
+
+    function checkInNoShow(row) {
+      var a = getNoShowByRow(row);
+      if (!a) return;
+
+      var btn = document.getElementById('nscheckin-' + row);
+      var card = document.getElementById('nscard-' + row);
+      if (btn) btn.disabled = true;
+      if (card) card.classList.add('processing');
+
+      var fee = a.selected_fee !== null && a.selected_fee !== undefined ? String(a.selected_fee).padStart(2,'0') : '00';
+      var saves = [ save(row, 'did_attend', 'yes'), save(row, 'fee', fee) ];
+
+      if (a.worked_shifts) {
+        var worked = Object.keys(a.worked_shifts).some(function(s) { return a.worked_shifts[s]; });
+        saves.push(save(row, 'did_volunteer', worked ? 'yes' : 'no'));
+      }
+
+      Promise.all(saves).then(function() {
+        if (card) card.classList.remove('processing');
+        if (card) card.classList.add('done');
+        showFlash(row);
+        // Remove card after brief pause
+        setTimeout(function() {
+          if (card) card.style.display = 'none';
+          noShowData = noShowData.filter(function(x) { return x.row !== row; });
+          renderSummary();
+          if (!noShowData.length) {
+            document.getElementById('no-show-container').innerHTML = '<div class="empty-state">All RSVPs have been checked in.</div>';
+          }
+        }, 1200);
+      });
+    }
+  </script>
+</body>
+</html>
