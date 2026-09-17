@@ -289,16 +289,16 @@
       if (!d.rsvpTimeline.length) return;
       var eventStart = d.eventStartMs;
 
-      // Build cumulative series — one point per RSVP
       var labels = [], counts = [], bgColors = [];
       d.rsvpTimeline.forEach(function(ts, i) {
-        labels.push(new Date(ts));
+        var dt = new Date(ts);
+        labels.push(dt.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
         counts.push(i + 1);
         var diffHrs = eventStart ? (eventStart - ts) / 3600000 : 999;
-        if (diffHrs <= 24)       bgColors.push('rgba(139,92,246,0.7)');  // door — purple
-        else if (diffHrs <= 72)  bgColors.push('rgba(239,68,68,0.7)');   // 3day — red
-        else if (diffHrs <= 168) bgColors.push('rgba(245,158,11,0.7)');  // 1week — amber
-        else                     bgColors.push('rgba(37,99,235,0.5)');    // normal — blue
+        if (diffHrs <= 24)       bgColors.push('rgba(139,92,246,0.85)');
+        else if (diffHrs <= 72)  bgColors.push('rgba(239,68,68,0.85)');
+        else if (diffHrs <= 168) bgColors.push('rgba(245,158,11,0.85)');
+        else                     bgColors.push('rgba(37,99,235,0.6)');
       });
 
       var ctx = document.getElementById('rsvp-chart').getContext('2d');
@@ -313,7 +313,7 @@
             backgroundColor: 'rgba(37,99,235,0.08)',
             borderWidth: 2,
             pointBackgroundColor: bgColors,
-            pointRadius: 4,
+            pointRadius: 5,
             fill: true,
             tension: 0.3
           }]
@@ -325,17 +325,14 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                title: function(items) { return new Date(items[0].parsed.x).toLocaleString(); },
                 label: function(item) { return 'RSVPs: ' + item.parsed.y; }
               }
             }
           },
           scales: {
             x: {
-              type: 'time',
-              time: { unit: 'day', tooltipFormat: 'MMM d, yyyy HH:mm' },
               grid: { color: '#f0ede8' },
-              ticks: { color: '#5a5a55', maxTicksLimit: 8 }
+              ticks: { color: '#5a5a55', maxTicksLimit: 10, maxRotation: 30 }
             },
             y: { beginAtZero: true, grid: { color: '#f0ede8' }, ticks: { color: '#5a5a55', stepSize: 1 } }
           }
@@ -347,25 +344,25 @@
     function drawArrivalChart(d) {
       if (!d.arrivals.length) return;
 
-      var STAY_MS   = 210 * 60 * 1000; // 210 min in ms
+      var STAY_MS   = 210 * 60 * 1000;
       var eventDate = d.eventDate || new Date().toISOString().slice(0,10);
       var parts     = eventDate.split('-');
 
-      // Build 16:00 to 02:00 next day in 15min buckets
       var start16 = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]), 16, 0, 0).getTime();
-      var end02   = start16 + (10 * 60 * 60 * 1000); // 10 hours
-      var buckets = [], bucketMs = 15 * 60 * 1000;
-      for (var t = start16; t <= end02; t += bucketMs) buckets.push(t);
+      var end02   = start16 + (10 * 60 * 60 * 1000);
+      var bucketMs = 15 * 60 * 1000;
+      var buckets = [], labels = [];
+      for (var t = start16; t <= end02; t += bucketMs) {
+        buckets.push(t);
+        var dt = new Date(t);
+        labels.push(dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }));
+      }
 
       var rawCounts = [], occupancyCounts = [];
-      buckets.forEach(function(bucketTime) {
-        var raw = d.arrivals.filter(function(a) { return a <= bucketTime; }).length;
-        var occ = d.arrivals.filter(function(a) { return a <= bucketTime && (a + STAY_MS) > bucketTime; }).length;
-        rawCounts.push(raw);
-        occupancyCounts.push(occ);
+      buckets.forEach(function(bt) {
+        rawCounts.push(d.arrivals.filter(function(a) { return a <= bt; }).length);
+        occupancyCounts.push(d.arrivals.filter(function(a) { return a <= bt && (a + STAY_MS) > bt; }).length);
       });
-
-      var labels = buckets.map(function(t) { return new Date(t); });
 
       var ctx = document.getElementById('arrival-chart').getContext('2d');
       arrivalChart = new Chart(ctx, {
@@ -400,24 +397,12 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: true, labels: { color: '#1a1a18', font: { size: 13 } } },
-            tooltip: {
-              callbacks: {
-                title: function(items) {
-                  var d = new Date(items[0].parsed.x);
-                  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                }
-              }
-            }
+            legend: { display: true, labels: { color: '#1a1a18', font: { size: 13 } } }
           },
           scales: {
             x: {
-              type: 'time',
-              min: start16,
-              max: end02,
-              time: { unit: 'hour', displayFormats: { hour: 'HH:mm' }, tooltipFormat: 'HH:mm' },
               grid: { color: '#f0ede8' },
-              ticks: { color: '#5a5a55', maxTicksLimit: 12 }
+              ticks: { color: '#5a5a55', maxTicksLimit: 12, maxRotation: 0 }
             },
             y: { beginAtZero: true, grid: { color: '#f0ede8' }, ticks: { color: '#5a5a55', stepSize: 1 } }
           }
