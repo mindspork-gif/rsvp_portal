@@ -1,3 +1,4 @@
+<!-- VERSION: V1 | DATE: 2026-09-12 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -167,6 +168,23 @@
     .save-indicator { font-size: 14px; color: #16a34a; font-weight: 500; opacity: 0; transition: opacity 0.3s; margin-top: 10px; min-height: 20px; text-align: center; }
     .save-indicator.show { opacity: 1; }
 
+    /* Intro popup */
+    .intro-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 400; align-items: center; justify-content: center; padding: 20px; }
+    .intro-bg.show { display: flex; }
+    .intro-box { background: #fff; border: 1.5px solid #c8c6be; border-radius: 16px; padding: 28px; width: 100%; max-width: 480px; text-align: center; }
+    .intro-title { font-size: 14px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: #5a5a55; margin-bottom: 6px; }
+    .intro-subtitle { font-size: 13px; color: #8a8880; margin-bottom: 20px; }
+    .intro-qr-wrap { background: #f5f4f1; border: 1.5px solid #e0ded8; border-radius: 12px; padding: 16px; display: inline-block; margin-bottom: 20px; }
+    .intro-qr-img { width: 200px; height: 200px; object-fit: contain; border-radius: 8px; display: block; }
+    .intro-divider { border: none; border-top: 1px solid #e0ded8; margin: 4px 0 20px; }
+    .intro-opt { width: 100%; padding: 16px 18px; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s; text-align: center; border: 1.5px solid; margin-bottom: 10px; }
+    .intro-opt:last-child { margin-bottom: 0; }
+    .intro-opt:focus { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .intro-opt-prior { background: #f0fdf4; border-color: #16a34a; color: #15803d; }
+    .intro-opt-prior:hover { background: #dcfce7; }
+    .intro-opt-staff { background: #fef2f2; border-color: #dc2626; color: #b91c1c; }
+    .intro-opt-staff:hover { background: #fee2e2; }
+
     /* All Names popup */
     .allnames-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; align-items: center; justify-content: center; padding: 20px; }
     .allnames-bg.show { display: flex; }
@@ -242,6 +260,26 @@
       <p class="comp-popup-body" id="comp-popup-body"></p>
       <button class="btn-comp-confirm" id="btn-comp-confirm" onclick="confirmComp()">Check In Comp</button>
       <button class="btn-cancel" onclick="closeCompPopup()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Intro / rules popup for new attendees -->
+  <div class="intro-bg" id="intro-bg" role="dialog" aria-modal="true">
+    <div class="intro-box">
+      <p class="intro-title">New Attendee</p>
+      <p class="intro-subtitle">Please have them scan for event rules and map</p>
+      <div class="intro-qr-wrap">
+        <img class="intro-qr-img" src="intro.pdf" alt="Rules and map QR code"
+          onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+        /><div style="display:none;width:200px;height:200px;background:#e8e6df;border-radius:8px;align-items:center;justify-content:center;font-size:13px;color:#8a8880;flex-direction:column;gap:6px;"><span>📄</span><span>intro.pdf</span></div>
+      </div>
+      <hr class="intro-divider">
+      <button class="intro-opt intro-opt-prior" onclick="resolveIntro('prior')" tabindex="0">
+        This person is attending with a prior attendee.
+      </button>
+      <button class="intro-opt intro-opt-staff" onclick="resolveIntro('staff')" tabindex="0">
+        This person is NOT attending with a prior attendee.<br>Please locate a staff member.
+      </button>
     </div>
   </div>
 
@@ -722,6 +760,7 @@
     }
 
     function clearResults() {
+      document.getElementById('intro-bg').classList.remove('show');
       document.getElementById('allnames-bg').classList.remove('show');
       document.getElementById('search').value = '';
       document.getElementById('results-container').innerHTML = '';
@@ -732,14 +771,38 @@
     }
 
     function toggleGreeted() {
-      greetedChecked = !greetedChecked;
+      // If not yet greeted, open intro popup first
+      if (!greetedChecked) {
+        document.getElementById('intro-bg').classList.add('show');
+        setTimeout(function() {
+          var first = document.querySelector('.intro-opt');
+          if (first) first.focus();
+        }, 50);
+      } else {
+        // Allow unchecking directly
+        greetedChecked = false;
+        var wrap = document.getElementById('greeted-wrap');
+        var cb   = document.getElementById('greeted-cb');
+        var lbl  = document.getElementById('greeted-label');
+        if (wrap) wrap.classList.remove('done');
+        if (cb)   cb.textContent = '';
+        if (lbl)  lbl.textContent = '★ First-time attendee — tap to confirm greeted';
+      }
+    }
+
+    function resolveIntro(choice) {
+      document.getElementById('intro-bg').classList.remove('show');
+      // Mark greeted and update UI
+      greetedChecked = true;
       var wrap = document.getElementById('greeted-wrap');
       var cb   = document.getElementById('greeted-cb');
       var lbl  = document.getElementById('greeted-label');
       var err  = document.getElementById('greeted-error');
-      if (wrap) wrap.classList.toggle('done', greetedChecked);
-      if (cb)   cb.textContent = greetedChecked ? '✓' : '';
-      if (lbl)  lbl.textContent = greetedChecked ? '★ First-time attendee — greeted' : '★ First-time attendee — tap to confirm greeted';
+      if (wrap) wrap.classList.add('done');
+      if (cb)   cb.textContent = '✓';
+      if (lbl)  lbl.textContent = choice === 'prior'
+        ? '★ First-time attendee — attending with prior attendee'
+        : '★ First-time attendee — staff notified';
       if (err)  err.classList.remove('show');
     }
 
@@ -789,6 +852,7 @@
     // Escape key handling
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
+        if (document.getElementById('intro-bg').classList.contains('show')) { return; } // intro must be resolved, no escape
         if (document.getElementById('allnames-bg').classList.contains('show')) { closeAllNames(); return; }
         if (document.getElementById('qr-pay-bg').classList.contains('show')) { closeQrPay(); return; }
         if (document.getElementById('comp-popup-bg').classList.contains('show')) { closeCompPopup(); return; }
